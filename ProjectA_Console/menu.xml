@@ -1,0 +1,9 @@
+﻿<rootmenu>
+    <menuItem Name="Кіру" Command="LogIn"/>
+    <menuItem Name="Шығу" Command="LogOut"/>
+    <menuItem Name="Менюге кіру" >
+        <menuItem Command="Menu1">Меню1</menuItem>
+        <menuItem Name="Меню2" Command="Menu2"/>
+    </menuItem>
+    <menuItem Name="Жаңа Меню" Command="NewMenu" />
+</rootmenu>
