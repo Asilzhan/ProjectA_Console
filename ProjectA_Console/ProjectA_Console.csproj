@@ -38,15 +38,16 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Model\Administrator.cs" />
-        <Compile Include="Model\Attempt.cs" />
-        <Compile Include="Model\Classroom.cs" />
-        <Compile Include="Model\Verdict.cs" />
-        <Compile Include="Model\User.cs" />
-        <Compile Include="Model\Problem.cs" />
-        <Compile Include="Model\Student.cs" />
-        <Compile Include="Model\Teacher.cs" />
-        <Compile Include="Model\TestCase.cs" />
+        <Compile Include="Models\Administrator.cs" />
+        <Compile Include="Models\Attempt.cs" />
+        <Compile Include="Models\Classroom.cs" />
+        <Compile Include="Models\Model.cs" />
+        <Compile Include="Models\Verdict.cs" />
+        <Compile Include="Models\User.cs" />
+        <Compile Include="Models\Problem.cs" />
+        <Compile Include="Models\Student.cs" />
+        <Compile Include="Models\Teacher.cs" />
+        <Compile Include="Models\TestCase.cs" />
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>

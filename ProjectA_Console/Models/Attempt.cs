@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace ProjectA_Console.Model
+namespace ProjectA_Console.Models
 {
     public class Attempt
     {
+        public int Id { get; set; }
         public User User { get; set; }
         public DateTime ShippingTime { get; set; }
         public Problem ProblemId { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace ProjectA_Console.Model
+﻿namespace ProjectA_Console.Models
 {
     public enum Verdict
     {
