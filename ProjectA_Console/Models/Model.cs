@@ -31,7 +31,9 @@ namespace ProjectA_Console.Models
             {
                 return false;   // Бұндай атты немесе логинді студент бар болса
             }
-            int id = Students.Max(s => s.Id);
+
+            int id = 1;
+            if (Students.Count != 0) id = Students.Max(s => s.Id)+1;
             Student student = new Student(id, name, lastName, born, course, login, passHash);
             Students.Add(student);
             return true;
@@ -42,6 +44,12 @@ namespace ProjectA_Console.Models
             int id = Problems.Max(s => s.Id);
             Problem problem = new Problem() {Id = id, Title = title, Text = text};
             return problem;
+        }
+        
+        public bool Authenticated(string name, int password, out Student student)
+        {
+            student = Students.Find(emp => emp.Name == name && emp.CheckPassword(password));
+            return !(student is null);
         }
     }
 }

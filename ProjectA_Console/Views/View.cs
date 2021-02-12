@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using  static System.Console;
 
 namespace ProjectA_Console.Views
@@ -25,7 +26,7 @@ namespace ProjectA_Console.Views
         {
             Print($"{key} ");
             ConsoleColor f = Console.ForegroundColor;
-            Console.ForegroundColor = color;
+            ForegroundColor = color;
             int res;
             while (!int.TryParse(Console.ReadLine(), out res))
             {
@@ -35,31 +36,52 @@ namespace ProjectA_Console.Views
 
             return res;
         }
+
+        public DateTime ReadDate(string key = "string", ConsoleColor color = ConsoleColor.White)
+        {
+            Print($"{key} ");
+            ConsoleColor f = Console.ForegroundColor;
+            ForegroundColor = color;
+            DateTime res;
+            while (!DateTime.TryParseExact(Console.ReadLine(), "dd:MM:yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
+            {
+                ShowError();
+                Print($"{key} ");
+            }
+            return res;
+        }
         
         public void Print(string text, ConsoleColor color = ConsoleColor.White)
         {
             ConsoleColor c = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-            Console.Write(text);
-            Console.ForegroundColor = c;
+            ForegroundColor = color;
+            Write(text);
+            ForegroundColor = c;
         }
 
         public string ReadString(string key = "string", ConsoleColor color = ConsoleColor.White)
         {
             Print($"{key} ");
             ConsoleColor f = Console.ForegroundColor;
-            Console.ForegroundColor = color;
+            ForegroundColor = color;
             string res = Console.ReadLine();
-            Console.ForegroundColor = f;
+            ForegroundColor = f;
             return res;
         }
         
         public void ShowError(string afterText = "")
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("Қате, қайтадан енгізіңіз: ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(afterText);
+            ForegroundColor = ConsoleColor.Red;
+            Write("Қате, қайтадан енгізіңіз: ");
+            ForegroundColor = ConsoleColor.White;
+            WriteLine(afterText);
+        }
+        
+        public void ShowHappy(string name)
+        {
+            ForegroundColor = ConsoleColor.Green;
+            WriteLine($"Құттықтаймыз, {name} жүйеге сәтті кірдіңіз!!!");
+            ForegroundColor = ConsoleColor.White;
         }
     }
 }
