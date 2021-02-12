@@ -2,7 +2,7 @@
 using System.Data.Common;
 using System.Security.Policy;
 
-namespace ProjectA_Console.Model
+namespace ProjectA_Console.Models
 {
     public class Student : User
     {

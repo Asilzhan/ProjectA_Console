@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Threading;
-using System.IO;
 
-namespace ProjectA_Console.Model
+namespace ProjectA_Console.Models
 {
     [Serializable]
     public class User

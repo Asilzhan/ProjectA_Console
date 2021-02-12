@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ProjectA_Console.Model
+namespace ProjectA_Console.Models
 {
     public class Classroom
     {

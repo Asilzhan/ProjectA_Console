@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Xml.Serialization;
-using System.IO;
 
-namespace ProjectA_Console.Model
+namespace ProjectA_Console.Models
 {
     public class Administrator : User
     {
