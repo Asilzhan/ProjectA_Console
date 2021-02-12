@@ -6,14 +6,12 @@ namespace ProjectA_Console.Models
 {
     public class Student : User
     {
-        public Student(string id, string name, string lastName, DateTime birthday, string email, string specialty,
-            int course, string login, string password) : base(id, name, lastName, birthday, email, login, password)
+        public Student(int id, string name, string lastName, DateTime birthday,
+            int course, string login, int passwordHash) : base(id, name, lastName, birthday, login, passwordHash)
         {
-            Specialty = specialty;
             Course = course;
         }
 
-        public string Specialty { get; set; }
         public int Course { get; set; }
         
     }

@@ -5,6 +5,7 @@ namespace ProjectA_Console.Models
 {
     public class Attempt
     {
+        public int Id { get; set; }
         public User User { get; set; }
         public DateTime ShippingTime { get; set; }
         public Problem ProblemId { get; set; }
