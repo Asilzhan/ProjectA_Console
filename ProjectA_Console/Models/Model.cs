@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace ProjectA_Console.Models
 {
@@ -31,7 +32,7 @@ namespace ProjectA_Console.Models
             {
                 return false;   // Бұндай атты немесе логинді студент бар болса
             }
-            int id = Students.Max(s => s.Id);
+            int id = Students.Max(s => s.Id) + 1;
             Student student = new Student(id, name, lastName, born, course, login, passHash);
             Students.Add(student);
             return true;
@@ -39,9 +40,27 @@ namespace ProjectA_Console.Models
         
         public Problem AddProblem(string title, string text)
         {
-            int id = Problems.Max(s => s.Id);
+            int id = Problems.Max(s => s.Id) + 1;
             Problem problem = new Problem() {Id = id, Title = title, Text = text};
             return problem;
+        }
+
+        public Attempt AddAttemption(User user, Problem problem)
+        {
+            int id = Attempts.Max(a => a.Id) + 1;
+            var attempt = new Attempt(id, user, problem);
+            return attempt;
+        }
+
+        public bool Authenticated(string login, int hash, ref Student student)
+        {
+            student = Students.Find(s => s.Login == login && s.CheckPassword(hash));
+            if (student != null)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
