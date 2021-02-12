@@ -7,7 +7,7 @@ namespace ProjectA_Console.Model
     public class Student : User
     {
         public Student(string id, string name, string lastName, DateTime birthday, string email, string specialty,
-            int course, string password) : base(id, name, lastName, birthday, email, password)
+            int course, string login, string password) : base(id, name, lastName, birthday, email, login, password)
         {
             Specialty = specialty;
             Course = course;
