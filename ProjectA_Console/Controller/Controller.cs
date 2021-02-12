@@ -5,7 +5,7 @@ using System.IO;
 using Microsoft.CSharp;
 using ProjectA_Console.Models;
 using ProjectA_Console.Views;
-
+using static System.Console;
 namespace ProjectA_Console.Controller
 {
     public class Controller
@@ -20,8 +20,9 @@ namespace ProjectA_Console.Controller
             int cmd;
             while (true)
             {
+                Clear();
                 view.MainMenu();
-                cmd = view.ReadInt(">>> ");
+                cmd = view.ReadInt();
                 
                 switch (cmd)
                 {
@@ -30,8 +31,8 @@ namespace ProjectA_Console.Controller
                         {
                              Clear();
                              view.ShowHappy(Student.Name);
-                             // StudentCommand(Student);
-                        }else
+                             StudentCommand();
+                        } else
                             view.ShowError();
                         break;
                     case 2:
@@ -45,30 +46,32 @@ namespace ProjectA_Console.Controller
 
         public bool Authenfication()
         {
-            string name = view.ReadString("Аты: ");
-            int password = view.ReadInt("Пароль: ");
+            string name = view.ReadString("Логин: ");
+            int password = view.ReadPass();
             return model.Authenticated(name, password, out Student);
         }
-        
+
         public void Register()
         {
             WriteLine("Тіркелу");
             string name = view.ReadString("Аты: ");
-            string lastName  = view.ReadString("Тегі: ");
+            string lastName = view.ReadString("Тегі: ");
             DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
             int course = view.ReadInt("Курс: ");
             string login = view.ReadString("Логин: ");
             int passwordHash = view.ReadInt("Пароль: ");
             model.TryAddStudent(name, lastName, birthday, course, login, passwordHash);
             WriteLine("Тіркелу сәтті аяқталды");
+        }
 
         public void StudentCommand()
         {
             int cmd;
             while (true)
             {
+                Clear();
                 view.StudentMenu();
-                cmd = view.ReadInt(">>> ");
+                cmd = view.ReadInt();
                 
                 switch (cmd)
                 {
@@ -83,14 +86,53 @@ namespace ProjectA_Console.Controller
 
         private void ShowProblems()
         {
+            Clear();
             view.Print(model.Problems);
-            Problem p = model.Problems[view.ReadInt(maxValue: model.Problems.Count)];
+            Problem p = model.Problems[view.ReadInt(">> ", maxValue: model.Problems.Count)];
+
+            ProblemMenu(p);
+        }
+
+        private void ProblemMenu(Problem problem)
+        {
+            int cmd;
+            while (true)
+            {
+                Clear();
+                view.Print(problem);
+                view.ProblemMenu();
+                cmd = view.ReadInt();
+                
+                switch (cmd)
+                {
+                    case 1:
+                        Submit(problem);
+                        break;
+                    case 2:
+                        view.Print(model.GetAttemptsOfStudent(problem, CurrentStudent));
+                        break;
+                    case 0:
+                        return;
+                    default:
+                        view.ShowError();
+                        ReadKey();
+                        break;
+                }
+                
+            }
         }
 
         public void Submit(Problem problem)
         {
-            string sourceText = view.ReadString("Жауабыңызды осы жерге Ctrl+V батырмасы арқылы қойыңыз\n", ConsoleColor.Green);
-            
+            string sourcePath = view.ReadString("Программаның файлы орналасқан адресті жазыңыз немесе Ctrl+V батырмасы арқылы қойыңыз\n", ConsoleColor.Green);
+
+            if (!File.Exists(sourcePath))
+            {
+                view.ShowError("Файл табылмады!");
+                return;
+            }
+
+            string sourceText = File.ReadAllText(sourcePath);
             CSharpCodeProvider codeProvider = new CSharpCodeProvider();
             ICodeCompiler icc = codeProvider.CreateCompiler();
 
@@ -103,7 +145,7 @@ namespace ProjectA_Console.Controller
             
             if (results.Errors.HasErrors)
             {
-                view.Print("Компиляция барысында қате шықты!", ConsoleColor.Red);
+                view.Print("Компиляция барысында қате шықты!\n", ConsoleColor.Red);
                 attempt.Verdict = Verdict.Complation_error;
             }
             else
@@ -131,9 +173,11 @@ namespace ProjectA_Console.Controller
                 stdInputWriter.WriteLine(testCase.Input);
                 string res = stdOutputReader.ReadToEnd();
                 Verdict verdict;
-                if (testCase.Output == res)
+                if (string.Compare(res.Trim(), testCase.Output, StringComparison.InvariantCultureIgnoreCase)==0)
                 {
                     attempt.Verdict = Verdict.Accepted;
+                    view.Print("Дұрыс жауап!\n", ConsoleColor.Green);
+                    ReadKey();
                 }
                 else
                 {
