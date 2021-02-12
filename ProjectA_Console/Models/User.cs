@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Threading;
-using System.IO;
 
 namespace ProjectA_Console.Models
 {
-    [Serializable]
     public class User
     {
+
         public int Id { get; set; }
         public string Name { get; set; }
         public string LastName { get; set; }
@@ -15,6 +13,7 @@ namespace ProjectA_Console.Models
 
         private readonly int _passwordHash;
         
+
         public User(int id, string name, string lastName, DateTime birthday, string login, int passwordHash)
         {
             Id = id;
