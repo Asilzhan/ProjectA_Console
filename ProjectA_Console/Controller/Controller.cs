@@ -14,7 +14,7 @@ namespace ProjectA_Console.Controller
         
         View view = new View();
         Model model = new Model();
-
+        public Student Student;
         public void Main()
         {
             int cmd;
@@ -26,14 +26,41 @@ namespace ProjectA_Console.Controller
                 switch (cmd)
                 {
                     case 1:
-                        
+                        if (Authenfication())
+                        {
+                             Clear();
+                             view.ShowHappy(Student.Name);
+                             // StudentCommand(Student);
+                        }else
+                            view.ShowError();
+                        break;
                     case 2:
-                        
+                        Clear();
+                        Register(); break;
                     case 0:
                         return;
                 }
             }
         }
+
+        public bool Authenfication()
+        {
+            string name = view.ReadString("Аты: ");
+            int password = view.ReadInt("Пароль: ");
+            return model.Authenticated(name, password, out Student);
+        }
+        
+        public void Register()
+        {
+            WriteLine("Тіркелу");
+            string name = view.ReadString("Аты: ");
+            string lastName  = view.ReadString("Тегі: ");
+            DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
+            int course = view.ReadInt("Курс: ");
+            string login = view.ReadString("Логин: ");
+            int passwordHash = view.ReadInt("Пароль: ");
+            model.TryAddStudent(name, lastName, birthday, course, login, passwordHash);
+            WriteLine("Тіркелу сәтті аяқталды");
 
         public void StudentCommand()
         {

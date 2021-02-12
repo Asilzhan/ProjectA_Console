@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using  static System.Console;
 using System.Collections.Generic;
 using System.Diagnostics;
 using ProjectA_Console.Models;
@@ -37,6 +39,7 @@ namespace ProjectA_Console.Views
         public int ReadInt(string key = "string", int maxValue = Int32.MaxValue, ConsoleColor color = ConsoleColor.White)
         {
             Print($"{key} ");
+
             var f = ForegroundColor;
             ForegroundColor = color;
             int res;
@@ -49,9 +52,24 @@ namespace ProjectA_Console.Views
             return res;
         }
 
+        public DateTime ReadDate(string key = "string", ConsoleColor color = ConsoleColor.White)
+        {
+            Print($"{key} ");
+            ConsoleColor f = Console.ForegroundColor;
+            ForegroundColor = color;
+            DateTime res;
+            while (!DateTime.TryParseExact(Console.ReadLine(), "dd:MM:yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
+            {
+                ShowError();
+                Print($"{key} ");
+            }
+            return res;
+        }
+        
         public void Print(string text, ConsoleColor color = ConsoleColor.White)
         {
-            var c = ForegroundColor;
+            ConsoleColor c = Console.ForegroundColor;
+
             ForegroundColor = color;
             Write(text);
             ForegroundColor = c;
@@ -73,6 +91,13 @@ namespace ProjectA_Console.Views
             Write("Қате, қайтадан енгізіңіз: ");
             ForegroundColor = ConsoleColor.White;
             WriteLine(afterText);
+        }
+        
+        public void ShowHappy(string name)
+        {
+            ForegroundColor = ConsoleColor.Green;
+            WriteLine($"Құттықтаймыз, {name} жүйеге сәтті кірдіңіз!!!");
+            ForegroundColor = ConsoleColor.White;
         }
     }
 }

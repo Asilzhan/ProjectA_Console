@@ -13,7 +13,11 @@ namespace ProjectA_Console.Models
         }
 
         public int Course { get; set; }
-        
+
+        public Student()
+        {
+            
+        }
     }
 }
 

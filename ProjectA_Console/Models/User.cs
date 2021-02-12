@@ -23,6 +23,11 @@ namespace ProjectA_Console.Models
             Login = login;
             _passwordHash = passwordHash;
         }
+
+        public User()
+        {
+            
+        }
         
         public bool CheckPassword(int hash) => _passwordHash.Equals(hash);
     }
