@@ -53,7 +53,7 @@ namespace ProjectA_Console.Views
         }
         public int ReadPass(ConsoleColor color = ConsoleColor.White)
         {
-            Print($"Пароль:");
+            Print($"Пароль: ");
             var f = ForegroundColor;
             ForegroundColor = color;
             string res = ReadLine();
@@ -122,17 +122,17 @@ namespace ProjectA_Console.Views
         }
         public void Print(Problem problem)
         {
-            WriteLine(new string('-',100));
-            WriteLine($"{"",45}{problem.Title}");
-            WriteLine(new string('-',100));
+            WriteLine(new string('-',120));
+            WriteLine($"{"",55}{problem.Title}");
+            WriteLine(new string('-',120));
             WriteLine($"{problem.Text}");
-            WriteLine(new string('-',100));
-            WriteLine($"{"Input", 45} | {"Output", 45} |");
+            WriteLine(new string('-',120));
+            WriteLine(String.Format("|{0, 58}|{1,58}|", "Input", "Output"));
             foreach (var problemTestCase in problem.TestCases)
             {
-                WriteLine($"{problemTestCase.Input, 45} | {problemTestCase.Output, 45} |");
+                WriteLine($"|{problemTestCase.Input.Trim(),58}|{problemTestCase.Output.Trim(),58}|");
             }
-            WriteLine(new string('-',100));
+            WriteLine(new string('-',120));
         }
     }
 }
