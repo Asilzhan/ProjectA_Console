@@ -42,11 +42,11 @@ namespace ProjectA_Console.Views
 
             var f = ForegroundColor;
             ForegroundColor = color;
-            int res;
-            while (!int.TryParse(ReadLine(), out res) && res >= maxValue)
+            int res=-1;
+            while (!int.TryParse(ReadLine(), out res) || res >= maxValue)
             {
                 ShowError();
-                Print($"{key} ");
+                Print($"{key}>> ");
             }
 
             return res;
@@ -113,11 +113,13 @@ namespace ProjectA_Console.Views
             if(attempts==null || attempts.Count==0) Print("Сіз ештеңе жібермегенсіз");
             else
             {
-                Print($"{"ID",5} {"Аты", 20} {"Вердикт", 10}\n");
+                Print($"{"ID",5} {"Аты", 20} {"Уақты", 10} {"Вердикт", 15}\n");
                 foreach (var attempt in attempts)
                 {
-                    Print($"{attempt.Id,5} {attempt.Problem.Title, 20} {attempt.Verdict, 10}\n");
+                    Print($"{attempt.Id,5} {attempt.Problem.Title, 20} {attempt.ShippingTime:d, 10} {attempt.Verdict, 10}\n");
                 }
+
+                ReadKey();
             }
         }
         public void Print(Problem problem)

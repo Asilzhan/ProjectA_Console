@@ -10,11 +10,10 @@ namespace ProjectA_Console.Controller
 {
     public class Controller
     {
-        public Student CurrentStudent { get; set; }
-        
         View view = new View();
         Model model = new Model();
-        public Student Student;
+        public Student CurrentStudent;
+
         public void Main()
         {
             int cmd;
@@ -30,7 +29,7 @@ namespace ProjectA_Console.Controller
                         if (Authenfication())
                         {
                              Clear();
-                             view.ShowHappy(Student.Name);
+                             view.ShowHappy(CurrentStudent.Name);
                              StudentCommand();
                         } else
                             view.ShowError();
@@ -48,7 +47,7 @@ namespace ProjectA_Console.Controller
         {
             string name = view.ReadString("Логин: ");
             int password = view.ReadPass();
-            return model.Authenticated(name, password, out Student);
+            return model.Authenticated(name, password, out CurrentStudent);
         }
 
         public void Register()
@@ -124,7 +123,7 @@ namespace ProjectA_Console.Controller
 
         public void Submit(Problem problem)
         {
-            string sourcePath = view.ReadString("Программаның файлы орналасқан адресті жазыңыз немесе Ctrl+V батырмасы арқылы қойыңыз\n", ConsoleColor.Green);
+            string sourcePath = view.ReadString("Программаның файлы орналасқан адресті жазыңыз немесе тышқанмен сүйреп әкеліңіз\n", ConsoleColor.Green);
 
             if (!File.Exists(sourcePath))
             {
@@ -152,41 +151,49 @@ namespace ProjectA_Console.Controller
             {
                 RunSolution(problem, results.PathToAssembly, ref attempt);
             }
+            model.Attempts.Add(attempt);
         }
 
         private void RunSolution(Problem problem, string assembly, ref Attempt attempt)
         {
-            Process process = new Process();
-            process.StartInfo.FileName = assembly;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardInput = true;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.ErrorDialog = false;
-            
-            process.Start();
-            
-            StreamWriter stdInputWriter  = process.StandardInput;
-            StreamReader stdOutputReader  = process.StandardOutput;
-
+            Verdict verdict = Verdict.Wrong_answer;
             foreach (var testCase in problem.TestCases)
             {
+                Process process = new Process();
+                process.StartInfo.FileName = assembly;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardInput = true;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.ErrorDialog = false;
+            
+                process.Start();
+            
+                StreamWriter stdInputWriter  = process.StandardInput;
+                StreamReader stdOutputReader  = process.StandardOutput;
+                
                 stdInputWriter.WriteLine(testCase.Input);
                 string res = stdOutputReader.ReadToEnd();
-                Verdict verdict;
+                
                 if (string.Compare(res.Trim(), testCase.Output, StringComparison.InvariantCultureIgnoreCase)==0)
                 {
-                    attempt.Verdict = Verdict.Accepted;
-                    view.Print("Дұрыс жауап!\n", ConsoleColor.Green);
-                    ReadKey();
+                    verdict = Verdict.Accepted;
                 }
                 else
                 {
-                    attempt.Verdict = Verdict.Wrong_answer;
+                    verdict = Verdict.Wrong_answer;
+                    break;
                 }
-
+                
+                
                 var result = new AttemptionResult(testCase.Input, testCase.Output, res);
                 attempt.TestCases.Add(result);
+                // process.Kill();
             }
+            if(verdict == Verdict.Accepted)
+                view.Print("Дұрыс жауап!\n", ConsoleColor.Green);
+            else 
+                view.Print("Қате жауап!\n", ConsoleColor.Green);
+            ReadKey();
         }
     }
 }
