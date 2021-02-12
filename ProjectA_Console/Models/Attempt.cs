@@ -8,8 +8,17 @@ namespace ProjectA_Console.Models
         public int Id { get; set; }
         public User User { get; set; }
         public DateTime ShippingTime { get; set; }
-        public Problem ProblemId { get; set; }
+        public Problem Problem { get; set; }
         public List<TestCase> TestCases { get; set; }
         public Verdict Verdict { get; set; }
+
+        public Attempt(int id, User user, Problem problem)
+        {
+            Id = id;
+            User = user;
+            ShippingTime = DateTime.Now;
+            Problem = problem;
+            TestCases = new List<TestCase>();
+        }
     }
 }

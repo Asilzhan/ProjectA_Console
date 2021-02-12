@@ -29,6 +29,6 @@ namespace ProjectA_Console.Models
             
         }
         
-        public bool CheckPassword(int pass) => _passwordHash.Equals(pass);
+        public bool CheckPassword(int hash) => _passwordHash.Equals(hash);
     }
 }
