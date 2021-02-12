@@ -1,5 +1,8 @@
 ﻿using System;
-using  static System.Console;
+using System.Collections.Generic;
+using System.Diagnostics;
+using ProjectA_Console.Models;
+using static System.Console;
 
 namespace ProjectA_Console.Views
 {
@@ -9,25 +12,35 @@ namespace ProjectA_Console.Views
         {
             WriteLine("[1] - Кіру");
             WriteLine("[2] - Тіркелу");
+            WriteLine("[0] - Шығу");
         }
-        
+
         public void StudentMenu()
         {
             WriteLine("[1] - Есептер");
+            WriteLine("[0] - Артқа");
         }
 
         public void ProblemMenu()
         {
             WriteLine("");
         }
-        
-        public int ReadInt(string key = "string", ConsoleColor color = ConsoleColor.White)
+
+        public void Print(List<Problem> problems)
+        {
+            Print("Есепті таңдаңыз: ", ConsoleColor.Green);
+            for (int i = 0; i < problems.Count; i++)
+            {
+                WriteLine($"{i}) {problems[i]}");
+            }
+        }
+        public int ReadInt(string key = "string", int maxValue = Int32.MaxValue, ConsoleColor color = ConsoleColor.White)
         {
             Print($"{key} ");
-            ConsoleColor f = Console.ForegroundColor;
-            Console.ForegroundColor = color;
+            var f = ForegroundColor;
+            ForegroundColor = color;
             int res;
-            while (!int.TryParse(Console.ReadLine(), out res))
+            while (!int.TryParse(ReadLine(), out res) && res >= maxValue)
             {
                 ShowError();
                 Print($"{key} ");
@@ -35,31 +48,31 @@ namespace ProjectA_Console.Views
 
             return res;
         }
-        
+
         public void Print(string text, ConsoleColor color = ConsoleColor.White)
         {
-            ConsoleColor c = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-            Console.Write(text);
-            Console.ForegroundColor = c;
+            var c = ForegroundColor;
+            ForegroundColor = color;
+            Write(text);
+            ForegroundColor = c;
         }
 
         public string ReadString(string key = "string", ConsoleColor color = ConsoleColor.White)
         {
             Print($"{key} ");
-            ConsoleColor f = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-            string res = Console.ReadLine();
-            Console.ForegroundColor = f;
+            var f = ForegroundColor;
+            ForegroundColor = color;
+            var res = ReadLine();
+            ForegroundColor = f;
             return res;
         }
-        
+
         public void ShowError(string afterText = "")
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("Қате, қайтадан енгізіңіз: ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(afterText);
+            ForegroundColor = ConsoleColor.Red;
+            Write("Қате, қайтадан енгізіңіз: ");
+            ForegroundColor = ConsoleColor.White;
+            WriteLine(afterText);
         }
     }
 }
