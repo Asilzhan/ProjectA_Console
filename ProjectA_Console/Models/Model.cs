@@ -52,8 +52,8 @@ namespace ProjectA_Console.Models
 Выведите ответ на задачу.",
                     TestCases = new List<TestCase>()
                     {
-                        new TestCase("3\n4", "5"),
-                        new TestCase("8\n15", "7")
+                        new TestCase("3 4", "5"),
+                        new TestCase("8 6", "10")
                     }
                 },
                 new Problem()
