@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using ProjectA_ConsoleCore.Helper;
 using ProjectA_ConsoleCore.Models;
 using  static System.Console;
 
@@ -81,7 +82,7 @@ namespace ProjectA_ConsoleCore.Views
             var f = ForegroundColor;
             ForegroundColor = color;
             int res=-1;
-            while (!int.TryParse(ReadLine(), out res) || res >= maxValue)
+            while (!int.TryParse(ReadLine(), out res) || res > maxValue)
             {
                 ShowError();
                 Print($"{key}>> ");
@@ -121,6 +122,29 @@ namespace ProjectA_ConsoleCore.Views
             var res = ReadLine();
             ForegroundColor = f;
             return res;
+        }
+
+        public string ReadRichString(string key = "Есептің берілгенін ашылған терезеге жазып, сақтаңыз (Ctrl+S). Есептің берілгенін жазып болған соң ашылған терезені жабыңыз (Enter - OK)")
+        {
+            Print($"{key} ");
+            ReadKey();
+            FileHelper fh = new FileHelper();
+            string text = fh.GetTextFromEditor();
+            return text;
+        }
+        
+        public List<TestCase> ReadTestCases()
+        {
+            List<TestCase> cases = new List<TestCase>();
+            do
+            {
+                var input = ReadString("\nТесттің кіріс мәндерін бір қатарға бос орын арқылы бөліп жазыңыз:\n");
+                var output = ReadString("\nТесттің шығыс мәндерін бір қатарға бос орын арқылы бөліп жазыңыз:\n");
+                cases.Add(new TestCase(input, output));
+                
+            } while (YesOrNo("Тағы бір тест қосқыңыз келеді ме?"));
+
+            return cases;
         }
         #endregion
         
@@ -193,11 +217,9 @@ namespace ProjectA_ConsoleCore.Views
                 Print(new string('-', BufferWidth), ConsoleColor.DarkBlue);
             }
 
-            return list[ReadInt("Таңдаңыз: ", list.Length)];
+            return list[ReadInt("Таңдаңыз: ", list.Length)-1];
 
         }
-
-        #endregion
 
         public T Select<T>(List<T> list)
         {
@@ -208,7 +230,15 @@ namespace ProjectA_ConsoleCore.Views
                 Print(new string('-', BufferWidth), ConsoleColor.DarkBlue);
             }
 
-            return list[ReadInt("Таңдаңыз: ", list.Count)];
+            return list[ReadInt("Таңдаңыз: ", list.Count)-1];
         }
+        #endregion
+
+        public bool YesOrNo(string message="")
+        {
+            Print($"{message} (y/n)");
+            return ReadKey().Key == ConsoleKey.Y;
+        }
+        
     }
 }

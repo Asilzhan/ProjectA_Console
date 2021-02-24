@@ -11,6 +11,7 @@ namespace ProjectA_ConsoleCore.Models
             birthday, login, passwordHash)
         {
             Role = Role.Teacher;
+            MyProblems = new List<Problem>();
         }
     }
 }

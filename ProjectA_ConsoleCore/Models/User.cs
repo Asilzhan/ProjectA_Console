@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -15,6 +16,7 @@ namespace ProjectA_ConsoleCore.Models
         public Role Role { get; set; }
         
         public string PasswordHash { get; set; }
+        public List<Attempt> Attempts { get; set; }
 
         public User(string name, string lastName, DateTime birthday, string login, string passwordHash) 
         {
@@ -23,6 +25,7 @@ namespace ProjectA_ConsoleCore.Models
             Birthday = birthday;
             Login = login;
             PasswordHash = passwordHash;
+            Attempts = new List<Attempt>();
         }
         public User()
         {

@@ -10,37 +10,39 @@ namespace ProjectA_ConsoleCore.Models
     public class Model
     {
         public AppContext AppContext { get; set; }
-        public List<Problem> Problems => AppContext.Problems.Include(problem => problem.TestCases).ToList();
+        // public List<Problem> Problems => AppContext.Problems.Include(problem => problem.TestCases).ToList();
 
+        public List<Problem> Problems => AppContext.Teachers.SelectMany(teacher => teacher.MyProblems).Include(problem => problem.TestCases).ToList();
         public Model()
         {
             AppContext = new AppContext();
         }
 
         #region Methods
-        
-        // public List<Problem> GetProblemsByTeacherId(int teacherId)
-        // {
-        //     return Problems.FindAll(problem => problem.Id == teacherId);
-        // }
-        public Problem AddProblem(string title, string text)
-        {
-            return new Problem() {Title = title, Text = text};
-        }
-        
+
         public void AddTeacher(string name, string lastName, DateTime birthday, string login, string passwordHash)
         {
-            AppContext.Users.Add(new Teacher(name, lastName, birthday, login, passwordHash));
+            AppContext.Teachers.Add(new Teacher(name, lastName, birthday, login, passwordHash));
         }
 
         public Attempt AddAttemption(User user, Problem problem)
         {
-            return new Attempt(user, problem);
+            var t = new Attempt(user, problem);
+            user.Attempts.Add(t);
+            AppContext.Update(user);
+            AppContext.Update(t);
+            return t;
+        }
+
+        public void AddProblem(Teacher teacher, Problem problem)
+        {
+            teacher.MyProblems.Add(problem);
+            AppContext.Update(teacher);
         }
         public bool Authenticated(string login, string passHash, out User user)
         {
             var students = AppContext.Students.ToList();
-            var teachers = AppContext.Teachers.ToList();
+            var teachers = AppContext.Teachers.Include(teacher => teacher.MyProblems).ToList();
             var admins = AppContext.Administrators.ToList();
             
             var t1 = students.Find(u => u.Login == login && u.CheckPassword(passHash));

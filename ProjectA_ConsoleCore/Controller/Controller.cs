@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -8,6 +9,8 @@ using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.EntityFrameworkCore;
+using ProjectA_ConsoleCore.Helper;
 using ProjectA_ConsoleCore.Models;
 using ProjectA_ConsoleCore.Views;
 using static System.Console;
@@ -112,7 +115,7 @@ namespace ProjectA_ConsoleCore.Controller
                         Search();
                         break;
                     case 2:
-                        StudentProblems();
+                        SelectProblems();
                         break;
                     case 3:
                         ProfileCommand();
@@ -122,11 +125,14 @@ namespace ProjectA_ConsoleCore.Controller
                 }
             }
         }
-        private void StudentProblems()
+        private void SelectProblems(List<Problem> list = null)
         {
             Clear();
-            var t = CurrentUser as Teacher;
-            var problem = view.Select(t.MyProblems);
+            if (list == null)
+            {
+                list = model.Problems;
+            }
+            var problem = view.Select(list);
             StudentProblemCommand(problem);
         }
 
@@ -146,7 +152,7 @@ namespace ProjectA_ConsoleCore.Controller
                         Submit(problem);
                         break;
                     case 2:
-                        view.Print(model.GetAttemptsOfStudent(problem, CurrentStudent));
+                        view.Print(CurrentUser.Attempts);
                         break;
                     case 0:
                         return;
@@ -179,8 +185,7 @@ namespace ProjectA_ConsoleCore.Controller
                         Search();
                         break;
                     case 2:
-                        // ShowProblems();
-                        TeacherProblemsCommand();
+                        TeacherProblemsMenu();
                         break;
                     case 3:
                         ProfileCommand();
@@ -191,6 +196,43 @@ namespace ProjectA_ConsoleCore.Controller
             }
         }
 
+        private void TeacherProblemsMenu()
+        {
+            int cmd;
+            while (true)
+            {
+                view.TeacherProblemMenu();
+                cmd = view.ReadInt(maxValue:3);
+                
+                switch (cmd)
+                {
+                    case 1:
+                        SelectProblems();
+                        break;
+                    case 2:
+                        SelectProblems((CurrentUser as Teacher)?.MyProblems);
+                        break;
+                    case 3:
+                        AddProblem();
+                        break;
+                    case 0:
+                        return;
+                }
+            }
+        }
+
+        private void AddProblem()
+        {
+            string title = view.ReadString("Есептің тақырыбы: ");
+            string text = view.ReadRichString();
+            List<TestCase> cases = view.ReadTestCases();
+            var problem = new Problem() {Title = title, Text = text, TestCases = cases};
+            if (CurrentUser is Teacher teacher) teacher.MyProblems.Add(problem);
+            // model.AppContext.Problems.Add(problem);
+            model.AppContext.Update(CurrentUser);
+            model.AppContext.Update(problem);
+        }
+        
         private void TeacherProblemsCommand()
         {
             var t = CurrentUser as Teacher;
@@ -295,7 +337,7 @@ namespace ProjectA_ConsoleCore.Controller
                 GenerateRuntimeConfig()
             );
             
-            Attempt attempt = model.AddAttemption(CurrentStudent, problem);
+            Attempt attempt = model.AddAttemption(CurrentUser, problem);
             
             if (!result.Success)
             {
@@ -307,6 +349,7 @@ namespace ProjectA_ConsoleCore.Controller
                 RunSolution(problem, assemblyPath, ref attempt);
             }
             // TODO: model.Attempts.Add(attempt);
+            model.AppContext.Update(CurrentUser);
         }
 
         private void RunSolution(Problem problem, string assembly, ref Attempt attempt)
