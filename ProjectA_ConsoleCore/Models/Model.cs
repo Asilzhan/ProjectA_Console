@@ -64,10 +64,10 @@ namespace ProjectA_ConsoleCore.Models
             return t3 != null;
         }
 
-        public List<Attempt> GetAttemptsOfStudent(Problem problem, Student currentStudent)
+        public List<Attempt> GetAttemptsOfStudent(Problem problem, User currentUser)
         {
             return AppContext.Attempts.AsParallel()
-                .Where(attempt => attempt.Problem == problem && attempt.User == currentStudent).ToList();
+                .Where(attempt => attempt.Problem == problem && attempt.User == currentUser).ToList();
         }
         
         #endregion

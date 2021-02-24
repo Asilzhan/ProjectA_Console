@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -9,8 +8,6 @@ using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.EntityFrameworkCore;
-using ProjectA_ConsoleCore.Helper;
 using ProjectA_ConsoleCore.Models;
 using ProjectA_ConsoleCore.Views;
 using static System.Console;
@@ -22,7 +19,6 @@ namespace ProjectA_ConsoleCore.Controller
         View view = new View();
         Model model = new Model();
         public User CurrentUser;
-        public Student CurrentStudent;
 
         #region Main
 
@@ -93,9 +89,9 @@ namespace ProjectA_ConsoleCore.Controller
             string login = view.ReadString("Логин: ");
             string passwordHash = view.ReadPass();
             if (!model.TryAddStudent(name, lastName, birthday, course, login, passwordHash))
-                view.Print("Жүйеде бұл қолданушы бар!!!", ConsoleColor.Yellow);
+                view.Print("Жүйеде бұл қолданушы бар!!!\n", ConsoleColor.Yellow);
             else
-                view.Print("Тіркелу сәтті аяқталды!!!", ConsoleColor.Green);
+                view.Print("Тіркелу сәтті аяқталды!!!\n", ConsoleColor.Green);
             ReadKey();
         }
 
@@ -112,19 +108,59 @@ namespace ProjectA_ConsoleCore.Controller
                 switch (cmd)
                 {
                     case 1:
-                        Search();
+                        try
+                        {
+                            Search();
+                        }
+                        catch (NotImplementedException notImp)
+                        {
+                            view.Print("Бұл меню жасалу үстінде!!!\n", ConsoleColor.Green);
+                        }
                         break;
                     case 2:
                         SelectProblems();
                         break;
                     case 3:
-                        ProfileCommand();
+                        ProfileCommand(CurrentUser);
                         break;
                     case 0:
                         return;
                 }
             }
         }
+
+        private void ProfileCommand(User currentUser)
+        {
+            Clear();
+            view.Print(CurrentUser);
+            EditCommand(CurrentUser);
+        }
+
+        private void EditCommand(User currentUser)
+        {
+            int cmd;
+            while (true)
+            {
+                view.EditMenu();
+                cmd = view.ReadInt();
+                
+                switch (cmd)
+                {
+                    case 1:
+                        EditPass();
+                        break;
+                    case 0:
+                        return;
+                }
+            }
+        }
+        private void EditPass()
+        {
+            CurrentUser.PasswordHash =  view.ReadPass();
+            model.AppContext.Update(CurrentUser);
+            view.Print("Пароль сәтті түрде өзгертілді!!!\n", ConsoleColor.Green);
+        }
+        
         private void SelectProblems(List<Problem> list = null)
         {
             Clear();
@@ -182,7 +218,14 @@ namespace ProjectA_ConsoleCore.Controller
                 switch (cmd)
                 {
                     case 1:
-                        Search();
+                        try
+                        {
+                            Search();
+                        }
+                        catch (NotImplementedException notImp)
+                        {
+                            view.Print("Бұл меню жасалу үстінде!!!", ConsoleColor.Green);
+                        }
                         break;
                     case 2:
                         TeacherProblemsMenu();
@@ -259,12 +302,15 @@ namespace ProjectA_ConsoleCore.Controller
                     case 1:
                         AddTeacher();
                         break;
+                    case 2:
+                       ProfileCommand(CurrentUser); 
+                        break;
                     case 0:
                         return;
                 }
             }
         }
-
+        
         private void AddTeacher()
         {
             Clear();
@@ -349,7 +395,6 @@ namespace ProjectA_ConsoleCore.Controller
                 RunSolution(problem, assemblyPath, ref attempt);
             }
             // TODO: model.Attempts.Add(attempt);
-            model.AppContext.Update(CurrentUser);
         }
 
         private void RunSolution(Problem problem, string assembly, ref Attempt attempt)

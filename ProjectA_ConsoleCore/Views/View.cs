@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using ProjectA_ConsoleCore.Helper;
 using ProjectA_ConsoleCore.Models;
 using  static System.Console;
 
@@ -44,6 +43,13 @@ namespace ProjectA_ConsoleCore.Views
         public void AdministratorMenu()
         {
             WriteLine("[1] - Мұғалім қосу\n" +
+                      "[2] - Профиль\n" +
+                      "[0] - Артқа");
+        }
+        
+        public void EditMenu()
+        {
+            WriteLine("[1] - Парольді өзгерту\n" +
                       "[0] - Артқа");
         }
         
@@ -82,7 +88,7 @@ namespace ProjectA_ConsoleCore.Views
             var f = ForegroundColor;
             ForegroundColor = color;
             int res=-1;
-            while (!int.TryParse(ReadLine(), out res) || res > maxValue)
+            while (!int.TryParse(ReadLine(), out res) || res >= maxValue)
             {
                 ShowError();
                 Print($"{key}>> ");
@@ -220,7 +226,7 @@ namespace ProjectA_ConsoleCore.Views
             return list[ReadInt("Таңдаңыз: ", list.Length)-1];
 
         }
-
+        
         public T Select<T>(List<T> list)
         {
             Clear();
@@ -232,6 +238,23 @@ namespace ProjectA_ConsoleCore.Views
 
             return list[ReadInt("Таңдаңыз: ", list.Count)-1];
         }
+
+        public void Print(User user)
+        {
+            WriteLine($"+------------------------------+");
+            WriteLine($"|             Ақпарат          |");
+            WriteLine($"+------------------------------+");
+            WriteLine($"|Аты: {user.Name, 25}|");
+            WriteLine($"|Фамилия: {user.LastName, 21}|");
+            WriteLine($"|Туған күні: {user.Birthday, 18:d}|");
+            WriteLine($"|Логин: {user.Login, 23}|");
+            WriteLine($"+------------------------------+");
+            WriteLine($"|{user.Role, 20}          |");
+            WriteLine($"+------------------------------+");
+        }
+        #endregion
+
+       
         #endregion
 
         public bool YesOrNo(string message="")
