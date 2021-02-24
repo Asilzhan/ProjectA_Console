@@ -8,34 +8,60 @@ namespace ProjectA_Console.Views
 {
     public class View
     {
+        #region Menu
+
         public void MainMenu()
         {
-            WriteLine("[1] - Кіру");
-            WriteLine("[2] - Тіркелу");
-            WriteLine("[0] - Шығу");
+            WriteLine("[1] - Кіру\n" +
+                      "[2] - Тіркелу\n" +
+                      "[0] - Шығу");
         }
 
-        public void StudentMenu()
+        public void ProfileMenu()
         {
-            WriteLine("[1] - Есептер");
-            WriteLine("[0] - Артқа");
+            WriteLine("[1] - Іздеу\n" +
+                      "[2] - Есептер\n" +
+                      "[3] - Профиль\n" +
+                      "[0] - Артқа");
+        }
+        public void StudentProblemMenu()
+        {
+            WriteLine("[1] - Жіберу\n" +
+                      "[2] - Менің жауаптарым\n" +
+                      "[0] - Артқа");
         }
 
-        public void ProblemMenu()
+        public void TeacherProblemMenu()
         {
-            WriteLine("[1] - Жіберу");
-            WriteLine("[2] - Менің жауаптарым");
-            WriteLine("[0] - Артқа");
+            WriteLine("[1] - Барлық есептер\n" +
+                      "[2] - Менің есептерім\n" +
+                      "[3] - Есеп қосу\n" +
+                      "[0] - Артқа");
+        }
+        
+        #endregion
+
+        #region Emodji
+
+        public void ShowError(string afterText = "")
+        {
+            ForegroundColor = ConsoleColor.Red;
+            Write("Қате, қайтадан енгізіңіз: ");
+            ForegroundColor = ConsoleColor.White;
+            WriteLine(afterText);
+        }
+        
+        public void ShowHappy(string name)
+        {
+            ForegroundColor = ConsoleColor.Green;
+            WriteLine($"Құттықтаймыз, {name} жүйеге сәтті кірдіңіз!!!");
+            ForegroundColor = ConsoleColor.White;
         }
 
-        public void Print(List<Problem> problems)
-        {
-            Print("Есепті таңдаңыз:\n", ConsoleColor.Green);
-            for (int i = 0; i < problems.Count; i++)
-            {
-                WriteLine($"{i}) {problems[i]}");
-            }
-        }
+        #endregion
+
+        #region Read
+        
         public int ReadInt(string key = "int", int maxValue = Int32.MaxValue, ConsoleColor color = ConsoleColor.White)
         {
             Print($"{key}>> ");
@@ -63,24 +89,15 @@ namespace ProjectA_Console.Views
         public DateTime ReadDate(string key = "", ConsoleColor color = ConsoleColor.White)
         {
             Print($"{key} ");
-            ConsoleColor f = Console.ForegroundColor;
+            ConsoleColor f = ForegroundColor;
             ForegroundColor = color;
             DateTime res;
-            while (!DateTime.TryParseExact(Console.ReadLine(), "dd:MM:yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
+            while (!DateTime.TryParseExact(ReadLine(), "dd:MM:yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
             {
                 ShowError();
                 Print($"{key} ");
             }
             return res;
-        }
-        
-        public void Print(string text, ConsoleColor color = ConsoleColor.White)
-        {
-            ConsoleColor c = Console.ForegroundColor;
-
-            ForegroundColor = color;
-            Write(text);
-            ForegroundColor = c;
         }
 
         public string ReadString(string key = "string", ConsoleColor color = ConsoleColor.White)
@@ -92,36 +109,54 @@ namespace ProjectA_Console.Views
             ForegroundColor = f;
             return res;
         }
-
-        public void ShowError(string afterText = "")
-        {
-            ForegroundColor = ConsoleColor.Red;
-            Write("Қате, қайтадан енгізіңіз: ");
-            ForegroundColor = ConsoleColor.White;
-            WriteLine(afterText);
-        }
+        #endregion
         
-        public void ShowHappy(string name)
-        {
-            ForegroundColor = ConsoleColor.Green;
-            WriteLine($"Құттықтаймыз, {name} жүйеге сәтті кірдіңіз!!!");
-            ForegroundColor = ConsoleColor.White;
-        }
+        #region Print
 
         public void Print(List<Attempt> attempts)
         {
-            if(attempts==null || attempts.Count==0) Print("Сіз ештеңе жібермегенсіз");
+            if (attempts == null || attempts.Count == 0)
+            {
+                Print("Сіз ештеңе жібермегенсіз");
+                ReadKey();
+            }
             else
             {
-                Print($"{"ID",5} {"Аты", 20} {"Уақты", 10} {"Вердикт", 15}\n");
+                WriteLine(new string('-', 70));
+                WriteLine($"|{"ID",5}|{"Аты", 20}|{"Уақыты", 20}|{"Вердикт", 20}|");
+                WriteLine(new string('-', 70));
                 foreach (var attempt in attempts)
                 {
-                    Print($"{attempt.Id,5} {attempt.Problem.Title, 20} {attempt.ShippingTime:d, 10} {attempt.Verdict, 10}\n");
+                    WriteLine($"|{attempt.Id,5}|{attempt.Problem.Title, 20}|{attempt.ShippingTime, 20}|{attempt.Verdict, 20}|");
                 }
-
+                WriteLine(new string('-', 70));
                 ReadKey();
             }
         }
+        
+        public void Print(string text, ConsoleColor color = ConsoleColor.White)
+        {
+            ConsoleColor c = ForegroundColor;
+
+            ForegroundColor = color;
+            Write(text);
+            ForegroundColor = c;
+        }
+
+        public void Print<T>(IEnumerable<T> DataFrame)
+        {
+            
+        }
+        
+        public void Print(List<Problem> problems)
+        {
+            Print("Есепті таңдаңыз:\n", ConsoleColor.Green);
+            for (var i = 0; i < problems.Count; i++)
+            {
+                WriteLine($"{i}) {problems[i]}");
+            }
+        }
+        
         public void Print(Problem problem)
         {
             WriteLine(new string('-',120));
@@ -129,12 +164,14 @@ namespace ProjectA_Console.Views
             WriteLine(new string('-',120));
             WriteLine($"{problem.Text}");
             WriteLine(new string('-',120));
-            WriteLine(String.Format("|{0, 58}|{1,58}|", "Input", "Output"));
+            WriteLine($"|{"Input",58}|{"Output",58}|");
             foreach (var problemTestCase in problem.TestCases)
             {
-                WriteLine($"|{problemTestCase.Input.Trim(),58}|{problemTestCase.Output.Trim(),58}|");
+                WriteLine($"|{problemTestCase.Input.Replace('\n', ' '),58}|{problemTestCase.Output.Replace('\n', ' '),58}|");
             }
             WriteLine(new string('-',120));
         }
+
+        #endregion
     }
 }

@@ -6,20 +6,18 @@ namespace ProjectA_Console.Models
 {
     public class Model
     {
-        public List<Student> Students { get; set; }
-        public List<Teacher> Teachers { get; set; }
+        public List<User> Users { get; set; }
         public List<Problem> Problems { get; set; }
         public List<Attempt> Attempts { get; set; }
 
         public Model()
         {
             // Students = new List<Student>();
-            Teachers = new List<Teacher>();
             // Problems = new List<Problem>();
             Attempts = new List<Attempt>();
 
             Problems = LoadExampleProblems();
-            Students = LoadExampleStudents();
+            Users = LoadExampleStudents();
         }
 
         private List<Problem> LoadExampleProblems()
@@ -52,8 +50,8 @@ namespace ProjectA_Console.Models
 Выведите ответ на задачу.",
                     TestCases = new List<TestCase>()
                     {
-                        new TestCase("3 4", "5"),
-                        new TestCase("8 6", "10")
+                        new TestCase("3\n4", "5"),
+                        new TestCase("8\n6", "10")
                     }
                 },
                 new Problem()
@@ -97,13 +95,14 @@ namespace ProjectA_Console.Models
             };
         }
 
-        private List<Student> LoadExampleStudents()
+        private List<User> LoadExampleStudents()
         {
-            return new List<Student>()
+            return new List<User>()
             {
                 new Student(1, "Асылжан", "Жансейт", DateTime.Parse("11.01.2001"), 3, "asilzhan",
                     "qwerty".GetHashCode()),
                 new Student(1, "Алмат", "Ергеш", DateTime.Parse("12.05.2000"), 3, "almat", "1234".GetHashCode()),
+                new Teacher(2,"Малика", "Абдрахманова", DateTime.Now, "malika", "oopsila".GetHashCode())
             };
         }
 
@@ -114,15 +113,15 @@ namespace ProjectA_Console.Models
 
         public bool TryAddStudent(string name, string lastName, DateTime born, int course, string login, int passHash)
         {
-            if (Students.Exists(s => (s.Name == name && s.LastName == lastName) || s.Login == login))
+            if (Users.Exists(s => (s.Name == name && s.LastName == lastName) || s.Login == login))
             {
                 return false; // Бұндай атты немесе логинді студент бар болса
             }
 
             int id = 1;
-            if (Students.Count != 0) id = Students.Max(s => s.Id) + 1;
+            if (Users.Count != 0) id = Users.Max(s => s.Id) + 1;
             Student student = new Student(id, name, lastName, born, course, login, passHash);
-            Students.Add(student);
+            Users.Add(student);
             return true;
         }
 
@@ -142,10 +141,10 @@ namespace ProjectA_Console.Models
             return attempt;
         }
 
-        public bool Authenticated(string login, int password, out Student student)
+        public bool Authenticated(string login, int password, out User user)
         {
-            student = Students.Find(std => std.Login == login && std.CheckPassword(password));
-            return !(student is null);
+            user = Users.Find(std => std.Login == login && std.CheckPassword(password));
+            return !(user is null);
         }
 
         public List<Attempt> GetAttemptsOfStudent(Problem problem, Student currentStudent)

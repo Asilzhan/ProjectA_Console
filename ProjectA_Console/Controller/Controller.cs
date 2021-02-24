@@ -12,6 +12,7 @@ namespace ProjectA_Console.Controller
     {
         View view = new View();
         Model model = new Model();
+        public User CurrentUser;
         public Student CurrentStudent;
 
         public void Main()
@@ -26,28 +27,38 @@ namespace ProjectA_Console.Controller
                 switch (cmd)
                 {
                     case 1:
+                        Clear();
+                        view.Print("Жүйеге кіру\n", ConsoleColor.Green);
                         if (Authenfication())
                         {
                              Clear();
-                             view.ShowHappy(CurrentStudent.Name);
-                             StudentCommand();
-                        } else
+                             view.ShowHappy(CurrentUser.Name);
+                             if(CurrentUser is Student)
+                                 StudentCommand();
+                             else if (CurrentUser is Teacher)
+                                 TeacherCommand();
+                             else
+                                 AdministratorCommand();
+                        } 
+                        else
                             view.ShowError();
+                        ReadKey();
                         break;
                     case 2:
                         Clear();
+                        view.Print("Жүйеге тіркелу\n", ConsoleColor.Green);
                         Register(); break;
                     case 0:
                         return;
                 }
             }
         }
-
+        
         public bool Authenfication()
         {
             string name = view.ReadString("Логин: ");
             int password = view.ReadPass();
-            return model.Authenticated(name, password, out CurrentStudent);
+            return model.Authenticated(name, password, out CurrentUser);
         }
 
         public void Register()
@@ -59,8 +70,16 @@ namespace ProjectA_Console.Controller
             int course = view.ReadInt("Курс: ");
             string login = view.ReadString("Логин: ");
             int passwordHash = view.ReadInt("Пароль: ");
-            model.TryAddStudent(name, lastName, birthday, course, login, passwordHash);
-            WriteLine("Тіркелу сәтті аяқталды");
+            if (!model.TryAddStudent(name, lastName, birthday, course, login, passwordHash))
+                view.Print("Жүйеде бұл қолданушы бар!!!", ConsoleColor.Yellow);
+            else
+                view.Print("Тіркелу сәтті аяқталды!!!", ConsoleColor.Green);
+            ReadKey();
+        }
+        
+        private void AdministratorCommand()
+        {
+            
         }
 
         public void StudentCommand()
@@ -68,8 +87,34 @@ namespace ProjectA_Console.Controller
             int cmd;
             while (true)
             {
-                Clear();
-                view.StudentMenu();
+                view.ProfileMenu();
+                cmd = view.ReadInt();
+                
+                switch (cmd)
+                {
+                    case 1:
+                        Search();
+                        break;
+                    case 2:
+                        ShowProblems();
+                        break;
+                    case 0:
+                        return;
+                }
+            }
+        }
+
+        private void Search()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void TeacherCommand()
+        {
+            int cmd;
+            while (true)
+            {
+                view.ProfileMenu();
                 cmd = view.ReadInt();
                 
                 switch (cmd)
@@ -87,7 +132,7 @@ namespace ProjectA_Console.Controller
         {
             Clear();
             view.Print(model.Problems);
-            Problem p = model.Problems[view.ReadInt(">> ", maxValue: model.Problems.Count)];
+            Problem p = model.Problems[view.ReadInt(maxValue: model.Problems.Count)];
 
             ProblemMenu(p);
         }
@@ -99,7 +144,7 @@ namespace ProjectA_Console.Controller
             {
                 Clear();
                 view.Print(problem);
-                view.ProblemMenu();
+                view.StudentProblemMenu();
                 cmd = view.ReadInt();
                 
                 switch (cmd)
@@ -140,7 +185,7 @@ namespace ProjectA_Console.Controller
             parameters.OutputAssembly = "test.exe";
             CompilerResults results = icc.CompileAssemblyFromSource(parameters, sourceText);
             
-            Attempt attempt = model.AddAttemption(CurrentStudent, problem);
+            Attempt attempt = model.AddAttemption(CurrentUser, problem);
             
             if (results.Errors.HasErrors)
             {
@@ -152,6 +197,7 @@ namespace ProjectA_Console.Controller
                 RunSolution(problem, results.PathToAssembly, ref attempt);
             }
             model.Attempts.Add(attempt);
+            ReadKey();
         }
 
         private void RunSolution(Problem problem, string assembly, ref Attempt attempt)
@@ -191,8 +237,10 @@ namespace ProjectA_Console.Controller
             }
             if(verdict == Verdict.Accepted)
                 view.Print("Дұрыс жауап!\n", ConsoleColor.Green);
-            else 
-                view.Print("Қате жауап!\n", ConsoleColor.Green);
+            else
+            {
+                view.Print("Қате жауап!\n", ConsoleColor.Red);
+            }
             ReadKey();
         }
     }
