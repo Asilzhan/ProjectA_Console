@@ -21,6 +21,8 @@ namespace ProjectA_ConsoleCore.Controller
         public User CurrentUser;
         public Student CurrentStudent;
 
+        #region Main
+
         public void Main()
         {
             int cmd;
@@ -37,30 +39,28 @@ namespace ProjectA_ConsoleCore.Controller
                         view.Print("Жүйеге кіру\n", ConsoleColor.Green);
                         if (Authenfication())
                         {
-                             Clear();
-                             view.ShowHappy(CurrentUser.Name);
-                             switch (CurrentUser.Role)
-                             {
-                                 case Role.Administrator:
-                                     AdministratorCommand();
-                                     break;
-                                 case Role.Student:
-                                     StudentCommand();
-                                     break;
-                                 case Role.Teacher:
-                                     TeacherCommand();
-                                     break;
-                                 default:
-                                     throw new ArgumentOutOfRangeException();
-                             }
+                            Clear();
+                            view.ShowHappy(CurrentUser.Name);
+                            switch (CurrentUser.Role)
+                            {
+                                case Role.Administrator:
+                                    AdministratorCommand();
+                                    break;
+                                case Role.Student:
+                                    StudentCommand();
+                                    break;
+                                case Role.Teacher:
+                                    TeacherCommand();
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
                         } 
                         else
                             view.ShowError();
                         ReadKey();
                         break;
                     case 2:
-                        Clear();
-                        view.Print("Жүйеге тіркелу\n", ConsoleColor.Green);
                         Register(); break;
                     case 0:
                         return;
@@ -77,7 +77,8 @@ namespace ProjectA_ConsoleCore.Controller
 
         public void Register()
         {
-            WriteLine("Тіркелу");
+            Clear();
+            view.Print("Жүйеге тіркелу\n", ConsoleColor.Green);
             string name = view.ReadString("Аты: ");
             string lastName = view.ReadString("Тегі: ");
             DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
@@ -90,6 +91,8 @@ namespace ProjectA_ConsoleCore.Controller
                 view.Print("Тіркелу сәтті аяқталды!!!", ConsoleColor.Green);
             ReadKey();
         }
+
+        #endregion
         
         private void StudentCommand()
         {
@@ -115,84 +118,16 @@ namespace ProjectA_ConsoleCore.Controller
                 }
             }
         }
-        private void TeacherCommand()
-        {
-            int cmd;
-            while (true)
-            {
-                view.ProfileMenu();
-                cmd = view.ReadInt();
-                
-                switch (cmd)
-                {
-                    case 1:
-                        Search();
-                        break;
-                    case 2:
-                        ShowProblems();
-                        break;
-                    case 3:
-                        ProfileCommand();
-                        break;
-                    case 0:
-                        return;
-                }
-            }
-        }
-
-        public void AdministratorCommand()
-        {
-            int cmd;
-            while (true)
-            {
-                view.AdministratorMenu();
-                cmd = view.ReadInt();
-                
-                switch (cmd)
-                {
-                    case 1:
-                        AddTeacher();
-                        break;
-                    case 0:
-                        return;
-                }
-            }
-        }
-
-        private void AddTeacher()
-        {
-            WriteLine("Мұғалімді тіркеу");
-            string name = view.ReadString("Аты: ");
-            string lastName = view.ReadString("Тегі: ");
-            DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
-            int course = view.ReadInt("Курс: ");
-            string login = view.ReadString("Логин: ");
-            int passwordHash = view.ReadInt("Пароль: ");
-            
-            view.Print("Тіркелу сәтті аяқталды!!!", ConsoleColor.Green);
-            ReadKey();
-        }
-
-        private void ProfileCommand()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void Search()
-        {
-            throw new NotImplementedException();
-        }
-        
         private void ShowProblems()
         {
             Clear();
             view.Print(model.Problems);
             Problem p = model.Problems[view.ReadInt(maxValue: model.Problems.Count)];
 
-            ProblemMenu(p);
+            StudentProblemCommand(p);
         }
 
-        private void ProblemMenu(Problem problem)
+        private void StudentProblemCommand(Problem problem)
         {
             int cmd;
             while (true)
@@ -221,6 +156,87 @@ namespace ProjectA_ConsoleCore.Controller
             }
         }
         
+
+        private void ProfileCommand()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void TeacherCommand()
+        {
+            int cmd;
+            while (true)
+            {
+                view.ProfileMenu();
+                cmd = view.ReadInt();
+                
+                switch (cmd)
+                {
+                    case 1:
+                        Search();
+                        break;
+                    case 2:
+                        ShowProblems();
+                        break;
+                    case 3:
+                        TeacherProblemCommand();
+                        break;
+                    case 0:
+                        return;
+                }
+            }
+        }
+        
+        private void TeacherProblemCommand()
+        {
+            throw new NotImplementedException();
+        }
+        
+
+        private void Search()
+        {
+            throw new NotImplementedException();
+        }
+        
+        #region Administrator
+
+        public void AdministratorCommand()
+        {
+            int cmd;
+            while (true)
+            {
+                view.AdministratorMenu();
+                cmd = view.ReadInt();
+                
+                switch (cmd)
+                {
+                    case 1:
+                        AddTeacher();
+                        break;
+                    case 0:
+                        return;
+                }
+            }
+        }
+        private void AddTeacher()
+        {
+            Clear();
+            WriteLine("Мұғалімді тіркеу");
+            string name = view.ReadString("Аты: ");
+            string lastName = view.ReadString("Тегі: ");
+            DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
+            int course = view.ReadInt("Курс: ");
+            string login = view.ReadString("Логин: ");
+            string passwordHash = view.ReadPass();
+            model.AddTeacher(name, lastName, birthday, login, passwordHash);
+            view.Print("Тіркелу сәтті аяқталды!!!", ConsoleColor.Green);
+            ReadKey();
+        }
+
+        #endregion
+
+        #region Compiler
+
         private string GenerateRuntimeConfig()
         {
             using (var stream = new MemoryStream())
@@ -331,5 +347,7 @@ namespace ProjectA_ConsoleCore.Controller
                 view.Print("Қате жауап!\n", ConsoleColor.Green);
             ReadKey();
         }
+
+        #endregion
     }
 }
