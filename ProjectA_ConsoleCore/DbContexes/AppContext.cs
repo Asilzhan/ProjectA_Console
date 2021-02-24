@@ -12,12 +12,12 @@ namespace ProjectA_ConsoleCore.DbContexes
         public DbSet<Attempt> Attempts { get; set; }
         public AppContext()
         {
-            // Database.EnsureDeleted();
+            Database.EnsureDeleted();
             Database.EnsureCreated();
-            // Users.AddRange(AddUser());
-            // Problems.AddRange(AddProblem()); 
+            Users.AddRange(AddUser());
+            Problems.AddRange(AddProblem()); 
             //
-            // SaveChanges();
+            SaveChanges();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -31,7 +31,7 @@ namespace ProjectA_ConsoleCore.DbContexes
                 new Student("Алмат", "Ергеш", DateTime.Parse("12.05.2000"), 3, "bigsoft", User.GetHashString("12345")),
                 new Student("Асылжан", "Жансейт", DateTime.Parse("11.01.2001"), 3, "asilzhan", User.GetHashString("qwerty")),
                 new Teacher("Малика", "Абрахманова", DateTime.Parse("05.05.1988"), "malika", User.GetHashString("asdfg")),
-                new Administrator("Бахытжан", "Ассилбеков", DateTime.Parse("23.02.1982"), "assilbekov", User.GetHashString("kaznpu")),
+                new Administrator("Бахытжан", "Ассилбеков", DateTime.Parse("02.12.1982"), "assilbekov", User.GetHashString("kaznpu")),
             };
         }
 
