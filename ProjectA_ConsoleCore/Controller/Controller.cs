@@ -39,12 +39,20 @@ namespace ProjectA_ConsoleCore.Controller
                         {
                              Clear();
                              view.ShowHappy(CurrentUser.Name);
-                             if(CurrentUser is Student)
-                                 AfterAuthenficationCommand();
-                             else if (CurrentUser is Teacher)
-                                 AfterAuthenficationCommand();
-                             else
-                                 AdministratorCommand();
+                             switch (CurrentUser.Role)
+                             {
+                                 case Role.Administrator:
+                                     AdministratorCommand();
+                                     break;
+                                 case Role.Student:
+                                     StudentCommand();
+                                     break;
+                                 case Role.Teacher:
+                                     TeacherCommand();
+                                     break;
+                                 default:
+                                     throw new ArgumentOutOfRangeException();
+                             }
                         } 
                         else
                             view.ShowError();
@@ -63,8 +71,8 @@ namespace ProjectA_ConsoleCore.Controller
         public bool Authenfication()
         {
             string name = view.ReadString("Логин: ");
-            int password = view.ReadPass();
-            return model.Authenticated(name, password, out CurrentUser);
+            string passHash = view.ReadPass();
+            return model.Authenticated(name, passHash, out CurrentUser);
         }
 
         public void Register()
@@ -75,7 +83,7 @@ namespace ProjectA_ConsoleCore.Controller
             DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
             int course = view.ReadInt("Курс: ");
             string login = view.ReadString("Логин: ");
-            int passwordHash = view.ReadInt("Пароль: ");
+            string passwordHash = view.ReadPass();
             if (!model.TryAddStudent(name, lastName, birthday, course, login, passwordHash))
                 view.Print("Жүйеде бұл қолданушы бар!!!", ConsoleColor.Yellow);
             else
@@ -83,7 +91,31 @@ namespace ProjectA_ConsoleCore.Controller
             ReadKey();
         }
         
-        private void AdministratorCommand()
+        private void StudentCommand()
+        {
+            int cmd;
+            while (true)
+            {
+                view.ProfileMenu();
+                cmd = view.ReadInt();
+                
+                switch (cmd)
+                {
+                    case 1:
+                        Search();
+                        break;
+                    case 2:
+                        ShowProblems();
+                        break;
+                    case 3:
+                        ProfileCommand();
+                        break;
+                    case 0:
+                        return;
+                }
+            }
+        }
+        private void TeacherCommand()
         {
             int cmd;
             while (true)
@@ -108,7 +140,7 @@ namespace ProjectA_ConsoleCore.Controller
             }
         }
 
-        public void AfterAuthenficationCommand()
+        public void AdministratorCommand()
         {
             int cmd;
             while (true)
@@ -253,7 +285,7 @@ namespace ProjectA_ConsoleCore.Controller
             {
                 RunSolution(problem, assemblyPath, ref attempt);
             }
-            model.Attempts.Add(attempt);
+            // TODO: model.Attempts.Add(attempt);
         }
 
         private void RunSolution(Problem problem, string assembly, ref Attempt attempt)

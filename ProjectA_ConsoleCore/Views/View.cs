@@ -83,14 +83,14 @@ namespace ProjectA_ConsoleCore.Views
 
             return res;
         }
-        public int ReadPass(ConsoleColor color = ConsoleColor.White)
+        public string ReadPass(ConsoleColor color = ConsoleColor.White)
         {
             Print($"Пароль: ");
             var f = ForegroundColor;
             ForegroundColor = color;
-            string res = ReadLine();
+            string res = ReadLine().Trim();
 
-            return res.GetHashCode();
+            return User.GetHashString(res);
         }
         public DateTime ReadDate(string key = "", ConsoleColor color = ConsoleColor.White)
         {

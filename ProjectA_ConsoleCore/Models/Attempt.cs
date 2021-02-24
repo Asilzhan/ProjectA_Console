@@ -19,5 +19,10 @@ namespace ProjectA_ConsoleCore.Models
             Problem = problem;
             TestCases = new List<TestCase>();
         }
+
+        public Attempt()
+        {
+            
+        }
     }
 }

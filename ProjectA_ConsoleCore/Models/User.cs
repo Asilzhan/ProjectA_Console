@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace ProjectA_ConsoleCore.Models
 {
@@ -9,22 +12,38 @@ namespace ProjectA_ConsoleCore.Models
         public string LastName { get; set; }
         public DateTime Birthday { get; set; }
         public string Login { get; set; }
-
-        private readonly int _passwordHash;
+        public Role Role { get; set; }
         
-        public User(string name, string lastName, DateTime birthday, string login, int passwordHash) 
+        public string PasswordHash { get; set; }
+
+        public User(string name, string lastName, DateTime birthday, string login, string passwordHash) 
         {
             Name = name;
             LastName = lastName;
             Birthday = birthday;
             Login = login;
-            _passwordHash = passwordHash;
+            PasswordHash = passwordHash;
         }
         public User()
         {
             
         }
         
-        public bool CheckPassword(int hash) => _passwordHash.Equals(hash);
+        public bool CheckPassword(string hash) => PasswordHash.Equals(hash);
+
+        public static byte[] GetHash(string inputString)
+        {
+            using (HashAlgorithm algorithm = SHA256.Create())
+                return algorithm.ComputeHash(Encoding.UTF8.GetBytes(inputString));
+        }
+
+        public static string GetHashString(string inputString)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in GetHash(inputString))
+                sb.Append(b.ToString("X2"));
+
+            return sb.ToString();
+        }
     }
 }

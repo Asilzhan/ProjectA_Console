@@ -12,22 +12,26 @@ namespace ProjectA_ConsoleCore.DbContexes
         public DbSet<Attempt> Attempts { get; set; }
         public AppContext()
         {
+            // Database.EnsureDeleted();
             Database.EnsureCreated();
-            Users.AddRange(AddUser());
-            Problems.AddRange(AddProblem()); 
-            
-            SaveChanges();
+            // Users.AddRange(AddUser());
+            // Problems.AddRange(AddProblem()); 
+            //
+            // SaveChanges();
         }
-
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=project_a_db;Trusted_Connection=True;");
+        }
         public List<User> AddUser()
         {
             return new List<User>()
             {
-                new Student("1", "1", DateTime.Now, 1, "1", "1".GetHashCode()),
-                new Student("Алмат", "Ергеш", DateTime.Parse("12.05.2000"), 3, "bigsoft", "12345".GetHashCode()),
-                new Student("Асылжан", "Жансейт", DateTime.Parse("11.01.2001"), 3, "asilzhan", "qwerty".GetHashCode()),
-                new Teacher("Малика", "Абрахманова", DateTime.Parse("05.05.1988"), "malika", "asdfg".GetHashCode()),
-                new Administrator("Бахытжан", "Ассилбеков", DateTime.Parse("23.02.1982"), "assilbekov", "kaznpu".GetHashCode()),
+                new Student("1", "1", DateTime.Now, 1, "1", User.GetHashString("1")),
+                new Student("Алмат", "Ергеш", DateTime.Parse("12.05.2000"), 3, "bigsoft", User.GetHashString("12345")),
+                new Student("Асылжан", "Жансейт", DateTime.Parse("11.01.2001"), 3, "asilzhan", User.GetHashString("qwerty")),
+                new Teacher("Малика", "Абрахманова", DateTime.Parse("05.05.1988"), "malika", User.GetHashString("asdfg")),
+                new Administrator("Бахытжан", "Ассилбеков", DateTime.Parse("23.02.1982"), "assilbekov", User.GetHashString("kaznpu")),
             };
         }
 
@@ -74,7 +78,6 @@ namespace ProjectA_ConsoleCore.DbContexes
                 
                 new Problem()
                 {
-                    Id = 4,
                     Title = "Дележ яблок - 1",
                     Text =
                         @"N школьников делят K яблок поровну, неделящийся остаток остается в корзинке. Сколько яблок останется в корзинке?
@@ -92,11 +95,6 @@ namespace ProjectA_ConsoleCore.DbContexes
                     }
                 }
             };
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=project_a_db;Trusted_Connection=True;");
         }
     }
 }
