@@ -12,9 +12,8 @@ namespace ProjectA_ConsoleCore.Models
         public List<TestCase> TestCases { get; set; }
         public Verdict Verdict { get; set; }
 
-        public Attempt(int id, User user, Problem problem)
+        public Attempt(User user, Problem problem)
         {
-            Id = id;
             User = user;
             ShippingTime = DateTime.Now;
             Problem = problem;

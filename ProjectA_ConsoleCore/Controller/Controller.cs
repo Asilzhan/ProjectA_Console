@@ -18,6 +18,7 @@ namespace ProjectA_ConsoleCore.Controller
     {
         View view = new View();
         Model model = new Model();
+        public User CurrentUser;
         public Student CurrentStudent;
 
         public void Main()
@@ -32,29 +33,74 @@ namespace ProjectA_ConsoleCore.Controller
                 switch (cmd)
                 {
                     case 1:
+                        Clear();
+                        view.Print("Жүйеге кіру\n", ConsoleColor.Green);
+                        if (Authenfication())
+                        {
+                             Clear();
+                             view.ShowHappy(CurrentUser.Name);
+                             if(CurrentUser is Student)
+                                 AfterAuthenficationCommand();
+                             else if (CurrentUser is Teacher)
+                                 AfterAuthenficationCommand();
+                             else
+                                 AdministratorCommand();
+                        } 
+                        else
+                            view.ShowError();
+                        ReadKey();
                         break;
                     case 2:
                         Clear();
-                        break;
+                        view.Print("Жүйеге тіркелу\n", ConsoleColor.Green);
+                        Register(); break;
                     case 0:
                         return;
                 }
             }
         }
         
-        public void StudentCommand()
+        public bool Authenfication()
+        {
+            string name = view.ReadString("Логин: ");
+            int password = view.ReadPass();
+            return model.Authenticated(name, password, out CurrentUser);
+        }
+
+        public void Register()
+        {
+            WriteLine("Тіркелу");
+            string name = view.ReadString("Аты: ");
+            string lastName = view.ReadString("Тегі: ");
+            DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
+            int course = view.ReadInt("Курс: ");
+            string login = view.ReadString("Логин: ");
+            int passwordHash = view.ReadInt("Пароль: ");
+            if (!model.TryAddStudent(name, lastName, birthday, course, login, passwordHash))
+                view.Print("Жүйеде бұл қолданушы бар!!!", ConsoleColor.Yellow);
+            else
+                view.Print("Тіркелу сәтті аяқталды!!!", ConsoleColor.Green);
+            ReadKey();
+        }
+        
+        private void AdministratorCommand()
         {
             int cmd;
             while (true)
             {
-                Clear();
-                view.StudentMenu();
+                view.ProfileMenu();
                 cmd = view.ReadInt();
                 
                 switch (cmd)
                 {
                     case 1:
+                        Search();
+                        break;
+                    case 2:
                         ShowProblems();
+                        break;
+                    case 3:
+                        ProfileCommand();
                         break;
                     case 0:
                         return;
@@ -62,11 +108,54 @@ namespace ProjectA_ConsoleCore.Controller
             }
         }
 
+        public void AfterAuthenficationCommand()
+        {
+            int cmd;
+            while (true)
+            {
+                view.AdministratorMenu();
+                cmd = view.ReadInt();
+                
+                switch (cmd)
+                {
+                    case 1:
+                        AddTeacher();
+                        break;
+                    case 0:
+                        return;
+                }
+            }
+        }
+
+        private void AddTeacher()
+        {
+            WriteLine("Мұғалімді тіркеу");
+            string name = view.ReadString("Аты: ");
+            string lastName = view.ReadString("Тегі: ");
+            DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
+            int course = view.ReadInt("Курс: ");
+            string login = view.ReadString("Логин: ");
+            int passwordHash = view.ReadInt("Пароль: ");
+            
+            view.Print("Тіркелу сәтті аяқталды!!!", ConsoleColor.Green);
+            ReadKey();
+        }
+
+        private void ProfileCommand()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void Search()
+        {
+            throw new NotImplementedException();
+        }
+        
         private void ShowProblems()
         {
             Clear();
             view.Print(model.Problems);
-            Problem p = model.Problems[view.ReadInt(">> ", maxValue: model.Problems.Count)];
+            Problem p = model.Problems[view.ReadInt(maxValue: model.Problems.Count)];
 
             ProblemMenu(p);
         }
@@ -78,7 +167,7 @@ namespace ProjectA_ConsoleCore.Controller
             {
                 Clear();
                 view.Print(problem);
-                view.ProblemMenu();
+                view.StudentProblemMenu();
                 cmd = view.ReadInt();
                 
                 switch (cmd)
@@ -99,6 +188,7 @@ namespace ProjectA_ConsoleCore.Controller
                 
             }
         }
+        
         private string GenerateRuntimeConfig()
         {
             using (var stream = new MemoryStream())
