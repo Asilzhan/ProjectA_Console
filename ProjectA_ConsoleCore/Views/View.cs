@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ProjectA_ConsoleCore.Models;
 using  static System.Console;
 
@@ -63,7 +64,12 @@ namespace ProjectA_ConsoleCore.Views
             WriteLine($"Құттықтаймыз, {name} жүйеге сәтті кірдіңіз!!!");
             ForegroundColor = ConsoleColor.White;
         }
-
+        
+        public void GoodBye()
+        {
+            Clear();
+            Print("Сау болыңыз!", ConsoleColor.Green);
+        }
         #endregion
 
         #region Read
@@ -98,7 +104,8 @@ namespace ProjectA_ConsoleCore.Views
             ConsoleColor f = ForegroundColor;
             ForegroundColor = color;
             DateTime res;
-            while (!DateTime.TryParseExact(ReadLine(), "dd:MM:yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
+            while(!DateTime.TryParse(ReadLine(), out res))
+            // while (!DateTime.TryParseExact(ReadLine(), "dd:MM:yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
             {
                 ShowError();
                 Print($"{key} ");
@@ -149,11 +156,6 @@ namespace ProjectA_ConsoleCore.Views
             ForegroundColor = c;
         }
 
-        public void Print<T>(IEnumerable<T> DataFrame)
-        {
-            
-        }
-        
         public void Print(List<Problem> problems)
         {
             Print("Есепті таңдаңыз:\n", ConsoleColor.Green);
@@ -179,5 +181,34 @@ namespace ProjectA_ConsoleCore.Views
         }
 
         #endregion
+
+        #region Select
+
+        public T Select<T>(T[] list)
+        {
+            Clear();
+            for (int i = 0; i < list.Length; i++)
+            {
+                Print($"{list[i]}\n");
+                Print(new string('-', BufferWidth), ConsoleColor.DarkBlue);
+            }
+
+            return list[ReadInt("Таңдаңыз: ", list.Length)];
+
+        }
+
+        #endregion
+
+        public T Select<T>(List<T> list)
+        {
+            Clear();
+            for (int i = 0; i < list.Count; i++)
+            {
+                Print($"{i+1}) {list[i]}\n");
+                Print(new string('-', BufferWidth), ConsoleColor.DarkBlue);
+            }
+
+            return list[ReadInt("Таңдаңыз: ", list.Count)];
+        }
     }
 }

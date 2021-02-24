@@ -53,16 +53,18 @@ namespace ProjectA_ConsoleCore.Controller
                                  default:
                                      throw new ArgumentOutOfRangeException();
                              }
-                        } 
+                        }
                         else
+                        {
                             view.ShowError();
-                        ReadKey();
+                            ReadKey(); 
+                        }
                         break;
                     case 2:
-                        Clear();
-                        view.Print("Жүйеге тіркелу\n", ConsoleColor.Green);
-                        Register(); break;
+                        Register(); 
+                        break;
                     case 0:
+                        view.GoodBye();
                         return;
                 }
             }
@@ -77,7 +79,8 @@ namespace ProjectA_ConsoleCore.Controller
 
         public void Register()
         {
-            WriteLine("Тіркелу");
+            Clear();
+            view.Print("Жүйеге тіркелу\n", ConsoleColor.Green);
             string name = view.ReadString("Аты: ");
             string lastName = view.ReadString("Тегі: ");
             DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
@@ -129,7 +132,8 @@ namespace ProjectA_ConsoleCore.Controller
                         Search();
                         break;
                     case 2:
-                        ShowProblems();
+                        // ShowProblems();
+                        TeacherProblemsCommand();
                         break;
                     case 3:
                         ProfileCommand();
@@ -138,6 +142,12 @@ namespace ProjectA_ConsoleCore.Controller
                         return;
                 }
             }
+        }
+
+        private void TeacherProblemsCommand()
+        {
+            var t = CurrentUser as Teacher;
+            var problem = view.Select(t.MyProblems);
         }
 
         public void AdministratorCommand()
@@ -161,10 +171,11 @@ namespace ProjectA_ConsoleCore.Controller
 
         private void AddTeacher()
         {
+            Clear();
             WriteLine("Мұғалімді тіркеу");
             string name = view.ReadString("Аты: ");
             string lastName = view.ReadString("Тегі: ");
-            DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
+            DateTime birthday = view.ReadDate("Туған күні [dd.MM.yyyy]: ");
             int course = view.ReadInt("Курс: ");
             string login = view.ReadString("Логин: ");
             int passwordHash = view.ReadInt("Пароль: ");
@@ -186,9 +197,7 @@ namespace ProjectA_ConsoleCore.Controller
         private void ShowProblems()
         {
             Clear();
-            view.Print(model.Problems);
-            Problem p = model.Problems[view.ReadInt(maxValue: model.Problems.Count)];
-
+            var p = view.Select(model.Problems);
             ProblemMenu(p);
         }
 

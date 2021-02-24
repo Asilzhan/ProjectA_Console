@@ -7,32 +7,45 @@ namespace ProjectA_ConsoleCore.DbContexes
 {
     public class AppContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
+        public DbSet<Student> Students { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
+        public DbSet<Administrator> Administrators { get; set; }
         public DbSet<Problem> Problems { get; set; }
         public DbSet<Attempt> Attempts { get; set; }
         public AppContext()
         {
+            Database.EnsureCreated();
+            // AddSampleData();
+        }
+
+        private void AddSampleData()
+        {
             Database.EnsureDeleted();
             Database.EnsureCreated();
-            Users.AddRange(AddUser());
-            Problems.AddRange(AddProblem()); 
-            //
+            Students.AddRange(StudentsSampleData());
+            Teachers.Add(new Teacher("Малика", "Абрахманова", DateTime.Parse("05.05.1988"), "malika",
+                User.GetHashString("asdfg"))
+            {
+                MyProblems = AddProblem()
+            });
+            Administrators.Add(new Administrator("Бахытжан", "Ассилбеков", DateTime.Parse("02.12.1982"), "assilbekov",
+                User.GetHashString("kaznpu")));
+            // Problems.AddRange(AddProblem());
             SaveChanges();
         }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        private List<Student> StudentsSampleData()
         {
-            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=project_a_db;Trusted_Connection=True;");
-        }
-        public List<User> AddUser()
-        {
-            return new List<User>()
+            return new List<Student>()
             {
                 new Student("1", "1", DateTime.Now, 1, "1", User.GetHashString("1")),
                 new Student("Алмат", "Ергеш", DateTime.Parse("12.05.2000"), 3, "bigsoft", User.GetHashString("12345")),
                 new Student("Асылжан", "Жансейт", DateTime.Parse("11.01.2001"), 3, "asilzhan", User.GetHashString("qwerty")),
-                new Teacher("Малика", "Абрахманова", DateTime.Parse("05.05.1988"), "malika", User.GetHashString("asdfg")),
-                new Administrator("Бахытжан", "Ассилбеков", DateTime.Parse("02.12.1982"), "assilbekov", User.GetHashString("kaznpu")),
-            };
+            };        
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=project_a_db;Trusted_Connection=True;");
         }
 
         public List<Problem> AddProblem()
@@ -78,7 +91,7 @@ namespace ProjectA_ConsoleCore.DbContexes
                 
                 new Problem()
                 {
-                    Title = "Дележ яблок - 1",
+                    Title = "Дележ яблок - 2",
                     Text =
                         @"N школьников делят K яблок поровну, неделящийся остаток остается в корзинке. Сколько яблок останется в корзинке?
 

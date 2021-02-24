@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ProjectA_ConsoleCore.DbContexes;
 using AppContext = ProjectA_ConsoleCore.DbContexes.AppContext;
 
@@ -9,7 +10,7 @@ namespace ProjectA_ConsoleCore.Models
     public class Model
     {
         public AppContext AppContext { get; set; }
-        public List<Problem> Problems => AppContext.Problems.ToList();
+        public List<Problem> Problems => AppContext.Problems.Include(problem => problem.TestCases).ToList();
 
         public Model()
         {
@@ -36,12 +37,29 @@ namespace ProjectA_ConsoleCore.Models
         {
             return new Attempt(user, problem);
         }
-
         public bool Authenticated(string login, string passHash, out User user)
         {
-            var t = AppContext.Users.ToList();
-            user = t.Find(u => u.Login == login && u.CheckPassword(passHash));
-            return user != null;
+            var students = AppContext.Students.ToList();
+            var teachers = AppContext.Teachers.ToList();
+            var admins = AppContext.Administrators.ToList();
+            
+            var t1 = students.Find(u => u.Login == login && u.CheckPassword(passHash));
+            if (t1 != null)
+            {
+                user = t1;
+                return true;
+            }
+            
+            var t2 = teachers.Find(u => u.Login == login && u.CheckPassword(passHash));
+            if (t2 != null)
+            {
+                user = t2;
+                return true;
+            }
+            
+            var t3 = admins.Find(u => u.Login == login && u.CheckPassword(passHash));
+            user = t3;
+            return t3 != null;
         }
 
         public List<Attempt> GetAttemptsOfStudent(Problem problem, Student currentStudent)
@@ -54,9 +72,9 @@ namespace ProjectA_ConsoleCore.Models
 
         public bool TryAddStudent(string name, string lastName, DateTime birthday, int course, string login, string passwordHash)
         {
-            if (AppContext.Users.Any(u => u.Login == login)) return false;
+            if (AppContext.Students.Any(u => u.Login == login)) return false;
             Student student = new Student(name, lastName, birthday, course, login, passwordHash);
-            AppContext.Users.Add(student);
+            AppContext.Students.Add(student);
             AppContext.SaveChangesAsync();
             return true;
         }
