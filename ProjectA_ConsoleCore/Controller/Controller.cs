@@ -21,6 +21,8 @@ namespace ProjectA_ConsoleCore.Controller
         public User CurrentUser;
         public Student CurrentStudent;
 
+        #region Main
+
         public void Main()
         {
             int cmd;
@@ -37,23 +39,23 @@ namespace ProjectA_ConsoleCore.Controller
                         view.Print("Жүйеге кіру\n", ConsoleColor.Green);
                         if (Authenfication())
                         {
-                             Clear();
-                             view.ShowHappy(CurrentUser.Name);
-                             switch (CurrentUser.Role)
-                             {
-                                 case Role.Administrator:
-                                     AdministratorCommand();
-                                     break;
-                                 case Role.Student:
-                                     StudentCommand();
-                                     break;
-                                 case Role.Teacher:
-                                     TeacherCommand();
-                                     break;
-                                 default:
-                                     throw new ArgumentOutOfRangeException();
-                             }
-                        }
+                            Clear();
+                            view.ShowHappy(CurrentUser.Name);
+                            switch (CurrentUser.Role)
+                            {
+                                case Role.Administrator:
+                                    AdministratorCommand();
+                                    break;
+                                case Role.Student:
+                                    StudentCommand();
+                                    break;
+                                case Role.Teacher:
+                                    TeacherCommand();
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+                        } 
                         else
                         {
                             view.ShowError();
@@ -93,6 +95,8 @@ namespace ProjectA_ConsoleCore.Controller
                 view.Print("Тіркелу сәтті аяқталды!!!", ConsoleColor.Green);
             ReadKey();
         }
+
+        #endregion
         
         private void StudentCommand()
         {
@@ -108,7 +112,7 @@ namespace ProjectA_ConsoleCore.Controller
                         Search();
                         break;
                     case 2:
-                        ShowProblems();
+                        StudentProblems();
                         break;
                     case 3:
                         ProfileCommand();
@@ -118,6 +122,49 @@ namespace ProjectA_ConsoleCore.Controller
                 }
             }
         }
+        private void StudentProblems()
+        {
+            Clear();
+            var t = CurrentUser as Teacher;
+            var problem = view.Select(t.MyProblems);
+            StudentProblemCommand(problem);
+        }
+
+        private void StudentProblemCommand(Problem problem)
+        {
+            int cmd;
+            while (true)
+            {
+                Clear();
+                view.Print(problem);
+                view.StudentProblemMenu();
+                cmd = view.ReadInt();
+                
+                switch (cmd)
+                {
+                    case 1:
+                        Submit(problem);
+                        break;
+                    case 2:
+                        view.Print(model.GetAttemptsOfStudent(problem, CurrentStudent));
+                        break;
+                    case 0:
+                        return;
+                    default:
+                        view.ShowError();
+                        ReadKey();
+                        break;
+                }
+                
+            }
+        }
+        
+
+        private void ProfileCommand()
+        {
+            throw new NotImplementedException();
+        }
+
         private void TeacherCommand()
         {
             int cmd;
@@ -150,6 +197,13 @@ namespace ProjectA_ConsoleCore.Controller
             var problem = view.Select(t.MyProblems);
         }
 
+        private void Search()
+        {
+            throw new NotImplementedException();
+        }
+        
+        #region Administrator
+
         public void AdministratorCommand()
         {
             int cmd;
@@ -175,61 +229,19 @@ namespace ProjectA_ConsoleCore.Controller
             WriteLine("Мұғалімді тіркеу");
             string name = view.ReadString("Аты: ");
             string lastName = view.ReadString("Тегі: ");
-            DateTime birthday = view.ReadDate("Туған күні [dd.MM.yyyy]: ");
+            DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
             int course = view.ReadInt("Курс: ");
             string login = view.ReadString("Логин: ");
-            int passwordHash = view.ReadInt("Пароль: ");
-            
+            string passwordHash = view.ReadPass();
+            model.AddTeacher(name, lastName, birthday, login, passwordHash);
             view.Print("Тіркелу сәтті аяқталды!!!", ConsoleColor.Green);
             ReadKey();
         }
 
-        private void ProfileCommand()
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
 
-        private void Search()
-        {
-            throw new NotImplementedException();
-        }
-        
-        private void ShowProblems()
-        {
-            Clear();
-            var p = view.Select(model.Problems);
-            ProblemMenu(p);
-        }
+        #region Compiler
 
-        private void ProblemMenu(Problem problem)
-        {
-            int cmd;
-            while (true)
-            {
-                Clear();
-                view.Print(problem);
-                view.StudentProblemMenu();
-                cmd = view.ReadInt();
-                
-                switch (cmd)
-                {
-                    case 1:
-                        Submit(problem);
-                        break;
-                    case 2:
-                        view.Print(model.GetAttemptsOfStudent(problem, CurrentStudent));
-                        break;
-                    case 0:
-                        return;
-                    default:
-                        view.ShowError();
-                        ReadKey();
-                        break;
-                }
-                
-            }
-        }
-        
         private string GenerateRuntimeConfig()
         {
             using (var stream = new MemoryStream())
@@ -340,5 +352,7 @@ namespace ProjectA_ConsoleCore.Controller
                 view.Print("Қате жауап!\n", ConsoleColor.Green);
             ReadKey();
         }
+
+        #endregion
     }
 }

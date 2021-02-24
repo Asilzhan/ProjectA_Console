@@ -28,9 +28,9 @@ namespace ProjectA_ConsoleCore.Models
             return new Problem() {Title = title, Text = text};
         }
         
-        public Teacher AddTeacher(string name, string lastName, DateTime birthday, string login, string passwordHash)
+        public void AddTeacher(string name, string lastName, DateTime birthday, string login, string passwordHash)
         {
-            return new Teacher(name, lastName, birthday, login, passwordHash);
+            AppContext.Users.Add(new Teacher(name, lastName, birthday, login, passwordHash));
         }
 
         public Attempt AddAttemption(User user, Problem problem)
