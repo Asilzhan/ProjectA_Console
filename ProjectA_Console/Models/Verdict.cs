@@ -4,7 +4,6 @@
     {
         Accepted,
         Wrong_answer,
-        Time_limit_exceeded,
         Complation_error
     }
 }
