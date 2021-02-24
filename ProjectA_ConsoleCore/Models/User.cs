@@ -1,10 +1,9 @@
 ﻿using System;
 
-namespace ProjectA_Console.Models
+namespace ProjectA_ConsoleCore.Models
 {
     public class User
     {
-
         public int Id { get; set; }
         public string Name { get; set; }
         public string LastName { get; set; }
@@ -13,17 +12,14 @@ namespace ProjectA_Console.Models
 
         private readonly int _passwordHash;
         
-
-        public User(int id, string name, string lastName, DateTime birthday, string login, int passwordHash)
+        public User(string name, string lastName, DateTime birthday, string login, int passwordHash) 
         {
-            Id = id;
             Name = name;
             LastName = lastName;
             Birthday = birthday;
             Login = login;
             _passwordHash = passwordHash;
         }
-
         public User()
         {
             

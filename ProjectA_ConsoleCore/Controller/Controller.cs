@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using ProjectA_Console.Models;
-using ProjectA_Console.Views;
-using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,8 +8,10 @@ using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.VisualBasic;
+using ProjectA_ConsoleCore.Models;
+using ProjectA_ConsoleCore.Views;
 using static System.Console;
+
 namespace ProjectA_ConsoleCore.Controller
 {
     public class Controller
@@ -33,43 +32,16 @@ namespace ProjectA_ConsoleCore.Controller
                 switch (cmd)
                 {
                     case 1:
-                        if (Authenfication())
-                        {
-                             Clear();
-                             view.ShowHappy(CurrentStudent.Name);
-                             StudentCommand();
-                        } else
-                            view.ShowError();
                         break;
                     case 2:
                         Clear();
-                        Register(); break;
+                        break;
                     case 0:
                         return;
                 }
             }
         }
-
-        public bool Authenfication()
-        {
-            string name = view.ReadString("Логин: ");
-            int password = view.ReadPass();
-            return model.Authenticated(name, password, out CurrentStudent);
-        }
-
-        public void Register()
-        {
-            WriteLine("Тіркелу");
-            string name = view.ReadString("Аты: ");
-            string lastName = view.ReadString("Тегі: ");
-            DateTime birthday = view.ReadDate("Туған күні [dd:MM:yyyy]: ");
-            int course = view.ReadInt("Курс: ");
-            string login = view.ReadString("Логин: ");
-            int passwordHash = view.ReadInt("Пароль: ");
-            model.TryAddStudent(name, lastName, birthday, course, login, passwordHash);
-            WriteLine("Тіркелу сәтті аяқталды");
-        }
-
+        
         public void StudentCommand()
         {
             int cmd;

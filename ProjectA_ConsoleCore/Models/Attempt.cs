@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ProjectA_Console.Models
+namespace ProjectA_ConsoleCore.Models
 {
     public class Attempt
     {

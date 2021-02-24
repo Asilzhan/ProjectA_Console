@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Globalization;
-using  static System.Console;
 using System.Collections.Generic;
-using ProjectA_Console.Models;
+using System.Globalization;
+using ProjectA_ConsoleCore.Models;
+using  static System.Console;
 
-namespace ProjectA_Console.Views
+namespace ProjectA_ConsoleCore.Views
 {
     public class View
     {

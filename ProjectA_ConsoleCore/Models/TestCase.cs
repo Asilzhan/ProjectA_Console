@@ -1,7 +1,8 @@
-﻿namespace ProjectA_Console.Models
+﻿namespace ProjectA_ConsoleCore.Models
 {
     public class TestCase
     {
+        public int Id { get; set; }
         public string Input { get; set; }
         public string Output { get; set; }
 

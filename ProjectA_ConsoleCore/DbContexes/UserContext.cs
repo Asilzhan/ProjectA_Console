@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
-using ProjectA_Console.Models;
+using ProjectA_ConsoleCore.Models;
 
 namespace ProjectA_ConsoleCore.DbContexes
 {
@@ -11,8 +11,10 @@ namespace ProjectA_ConsoleCore.DbContexes
         public UserContext()
         {
             Database.EnsureCreated();
-            Users.Add(new Student(1, "1", "1", DateTime.Now, 1, "1", "1".GetHashCode()));
-            SaveChanges();
+            // Users.Add(new Student("1", "1", DateTime.Now, 1, "1", "1".GetHashCode()));
+            // Users.Add(new Student("Asilzhan", "Zhanseit", DateTime.Parse("11.01.2001"), 3, "asilzhan", "qwerty".GetHashCode()));
+
+            // SaveChanges();
         }
         
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
