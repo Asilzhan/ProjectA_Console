@@ -1,97 +1,67 @@
 ﻿using System;
-using System.Globalization;
-using  static System.Console;
 using System.Collections.Generic;
-using ProjectA_Console.Models;
+using System.Globalization;
+using System.Linq;
+using ProjectA_ConsoleCore.Helper;
+using ProjectA_ConsoleCore.Models;
+using  static System.Console;
 
-namespace ProjectA_Console.Views
+namespace ProjectA_ConsoleCore.Views
 {
     public class View
     {
+        #region Menu
+
         public void MainMenu()
         {
-            WriteLine("[1] - Кіру");
-            WriteLine("[2] - Тіркелу");
-            WriteLine("[0] - Шығу");
+            WriteLine("[1] - Кіру\n" +
+                      "[2] - Тіркелу\n" +
+                      "[0] - Шығу");
         }
 
-        public void StudentMenu()
+        public void ProfileMenu(string name)
         {
-            WriteLine("[1] - Есептер");
-            WriteLine("[0] - Артқа");
+            Clear();
+            ShowHappy(name);
+            WriteLine("[1] - Іздеу\n" +
+                      "[2] - Есептер\n" +
+                      "[3] - Профиль\n" +
+                      "[0] - Артқа");
+        }
+        public void StudentProblemMenu()
+        {
+            WriteLine("[1] - Жіберу\n" +
+                      "[2] - Менің жауаптарым\n" +
+                      "[0] - Артқа");
         }
 
-        public void ProblemMenu()
+        public void TeacherProblemMenu()
         {
-            WriteLine("[1] - Жіберу");
-            WriteLine("[2] - Менің жауаптарым");
-            WriteLine("[0] - Артқа");
-        }
-
-        public void Print(List<Problem> problems)
-        {
-            Print("Есепті таңдаңыз:\n", ConsoleColor.Green);
-            for (int i = 0; i < problems.Count; i++)
-            {
-                WriteLine($"{i}) {problems[i]}");
-            }
-        }
-        public int ReadInt(string key = "int", int maxValue = Int32.MaxValue, ConsoleColor color = ConsoleColor.White)
-        {
-            Print($"{key}>> ");
-
-            var f = ForegroundColor;
-            ForegroundColor = color;
-            int res=-1;
-            while (!int.TryParse(ReadLine(), out res) || res >= maxValue)
-            {
-                ShowError();
-                Print($"{key}>> ");
-            }
-
-            return res;
-        }
-        public int ReadPass(ConsoleColor color = ConsoleColor.White)
-        {
-            Print($"Пароль: ");
-            var f = ForegroundColor;
-            ForegroundColor = color;
-            string res = ReadLine();
-
-            return res.GetHashCode();
-        }
-        public DateTime ReadDate(string key = "", ConsoleColor color = ConsoleColor.White)
-        {
-            Print($"{key} ");
-            ConsoleColor f = Console.ForegroundColor;
-            ForegroundColor = color;
-            DateTime res;
-            while (!DateTime.TryParseExact(Console.ReadLine(), "dd:MM:yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
-            {
-                ShowError();
-                Print($"{key} ");
-            }
-            return res;
+            WriteLine("[1] - Барлық есептер\n" +
+                      "[2] - Менің есептерім\n" +
+                      "[3] - Есеп қосу\n" +
+                      "[0] - Артқа");
         }
         
-        public void Print(string text, ConsoleColor color = ConsoleColor.White)
+        public void AdministratorMenu(string name)
         {
-            ConsoleColor c = Console.ForegroundColor;
-
-            ForegroundColor = color;
-            Write(text);
-            ForegroundColor = c;
+            Clear();
+            ShowHappy(name, Role.Administrator);
+            WriteLine("[1] - Мұғалім қосу\n" +
+                      "[2] - Қолданушыны жою\n" +
+                      "[3] - Профиль\n" +
+                      "[0] - Артқа");
         }
-
-        public string ReadString(string key = "string", ConsoleColor color = ConsoleColor.White)
+        
+        public void EditMenu()
         {
-            Print($"{key} ");
-            var f = ForegroundColor;
-            ForegroundColor = color;
-            var res = ReadLine();
-            ForegroundColor = f;
-            return res;
+            WriteLine("[1] - Парольді өзгерту\n" +
+                      "[0] - Артқа");
         }
+        
+        #endregion
+
+        #region Emodji
 
         public void ShowError(string afterText = "")
         {
@@ -101,27 +71,157 @@ namespace ProjectA_Console.Views
             WriteLine(afterText);
         }
         
-        public void ShowHappy(string name)
+        public void ShowHappy(string name, Role role = Role.Student)
         {
-            ForegroundColor = ConsoleColor.Green;
-            WriteLine($"Құттықтаймыз, {name} жүйеге сәтті кірдіңіз!!!");
+            if (role == Role.Administrator)
+                ForegroundColor = ConsoleColor.Magenta;
+            else 
+                ForegroundColor = ConsoleColor.Green;
+            WriteLine($"Қош келдіңіз, {name}!");
             ForegroundColor = ConsoleColor.White;
         }
+        
+        public void GoodBye()
+        {
+            Clear();
+            Print("Сау болыңыз!", ConsoleColor.Green);
+        }
+        
+        #endregion
+
+        #region Read
+        
+        public int ReadInt(string key = "int", int maxValue = Int32.MaxValue, ConsoleColor color = ConsoleColor.White)
+        {
+            Print($"{key}>> ");
+
+            var f = ForegroundColor;
+            ForegroundColor = color;
+            int res=-1;
+            while (!int.TryParse(ReadLine(), out res) || res > maxValue)
+            {
+                ShowError();
+                Print($"{key}>> ");
+            }
+
+            return res;
+        }
+        public string ReadPass(string message = "", ConsoleColor color = ConsoleColor.White)
+        {
+            return User.GetHashString(ReadString(message == "" ? "Пароль: " : message, color).Trim());
+        }
+        public DateTime ReadDate(string key = "", ConsoleColor color = ConsoleColor.White)
+        {
+            Print($"{key} ");
+            ConsoleColor f = ForegroundColor;
+            ForegroundColor = color;
+            DateTime res;
+            while(!DateTime.TryParse(ReadLine(), out res))
+            {
+                ShowError();
+                Print($"{key} ");
+            }
+            return res;
+        }
+
+        public string ReadString(string key = "string", ConsoleColor color = ConsoleColor.White)
+        {
+            Print($"{key}");
+            var f = ForegroundColor;
+            ForegroundColor = color;
+            var res = ReadLine();
+            ForegroundColor = f;
+            return res;
+        }
+
+        public string ReadRichString(string key = "Есептің берілгенін ашылған терезеге жазып, сақтаңыз (Ctrl+S). Есептің берілгенін жазып болған соң ашылған терезені жабыңыз (Enter - OK)")
+        {
+            Print($"{key} ");
+            ReadKey();
+            WriteLine();
+            FileHelper fh = new FileHelper();
+            string text = fh.GetTextFromEditor();
+            return text;
+        }
+        
+        public List<TestCase> ReadTestCases()
+        {
+            List<TestCase> cases = new List<TestCase>();
+            do
+            {
+                Clear();
+                var input = ReadString("Тесттің кіріс мәндерін бір қатарға бос орын арқылы бөліп жазыңыз:\n");
+                var output = ReadString("Тесттің шығыс мәндерін бір қатарға бос орын арқылы бөліп жазыңыз:\n");
+                cases.Add(new TestCase(input, output));
+                
+            } while (YesOrNo("Тағы бір тест қосқыңыз келеді ме? "));
+
+            return cases;
+        }
+        
+        public bool YesOrNo(string message="")
+        {
+            string choice;
+            do
+            {
+                choice = ReadString($"{message} (y/n) ").ToLower();
+            } while (choice != "y" && choice != "n");
+
+            return choice == "y";
+        }
+
+        public void Wait() => ReadKey();
+        
+
+        #endregion
+        
+        #region Print
 
         public void Print(List<Attempt> attempts)
         {
-            if(attempts==null || attempts.Count==0) Print("Сіз ештеңе жібермегенсіз");
+            if (attempts == null || attempts.Count == 0)
+            {
+                Print("Сіз ештеңе жібермегенсіз");
+                ReadKey();
+            }
             else
             {
-                Print($"{"ID",5} {"Аты", 20} {"Уақты", 10} {"Вердикт", 15}\n");
+                WriteLine(new string('-', 70));
+                WriteLine($"|{"ID",5}|{"Аты", 20}|{"Уақыты", 20}|{"Вердикт", 20}|");
+                WriteLine(new string('-', 70));
                 foreach (var attempt in attempts)
                 {
-                    Print($"{attempt.Id,5} {attempt.Problem.Title, 20} {attempt.ShippingTime:d, 10} {attempt.Verdict, 10}\n");
+                    WriteLine($"|{attempt.Id,5}|{attempt.Problem.Title, 20}|{attempt.ShippingTime, 20}|{attempt.Verdict, 20}|");
                 }
-
+                WriteLine(new string('-', 70));
                 ReadKey();
             }
         }
+        
+        public void Print(string text, ConsoleColor color = ConsoleColor.White)
+        {
+            ConsoleColor c = ForegroundColor;
+            ForegroundColor = color;
+            Write(text);
+            ForegroundColor = c;
+        }
+
+        public void Println(string text, ConsoleColor color = ConsoleColor.White) => Print(text + '\n', color);
+        
+        public void Print(User user)
+        {
+            WriteLine($"+------------------------------+");
+            WriteLine($"|             Ақпарат          |");
+            WriteLine($"+------------------------------+");
+            WriteLine($"|Аты: {user.Name, 25}|");
+            WriteLine($"|Фамилия: {user.LastName, 21}|");
+            WriteLine($"|Туған күні: {user.Birthday, 18:d}|");
+            WriteLine($"|Логин: {user.Login, 23}|");
+            WriteLine($"+------------------------------+");
+            WriteLine($"|{user.Role, 20}          |");
+            WriteLine($"+------------------------------+\n");
+        }
+
         public void Print(Problem problem)
         {
             WriteLine(new string('-',120));
@@ -129,12 +229,35 @@ namespace ProjectA_Console.Views
             WriteLine(new string('-',120));
             WriteLine($"{problem.Text}");
             WriteLine(new string('-',120));
-            WriteLine(String.Format("|{0, 58}|{1,58}|", "Input", "Output"));
+            WriteLine($"|{"Input",58}|{"Output",58}|");
             foreach (var problemTestCase in problem.TestCases)
             {
-                WriteLine($"|{problemTestCase.Input.Trim(),58}|{problemTestCase.Output.Trim(),58}|");
+                WriteLine($"|{problemTestCase.Input.Replace('\n', ' '),58}|{problemTestCase.Output.Replace('\n', ' '),58}|");
             }
             WriteLine(new string('-',120));
         }
+
+        #endregion
+
+        #region Select
+
+        public T Select<T>(List<T> list) where T : class
+        {
+            Clear();
+            // string t = new string('-', BufferWidth);
+            for (int i = 0; i < list.Count; i++)
+            {
+                Println($"{i+1}) {list[i]}");
+                // Print(t, ConsoleColor.DarkBlue);
+            }
+            Println("0) Артқа");
+            // Print(t, ConsoleColor.DarkBlue);
+            
+            int index = ReadInt("Таңдаңыз: ", list.Count);
+            if (index == 0) return default;
+            return list[index-1];
+        }
+        
+        #endregion
     }
 }

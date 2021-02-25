@@ -1,34 +1,57 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-namespace ProjectA_Console.Models
+namespace ProjectA_ConsoleCore.Models
 {
     public class User
     {
-
         public int Id { get; set; }
         public string Name { get; set; }
         public string LastName { get; set; }
         public DateTime Birthday { get; set; }
         public string Login { get; set; }
-
-        private readonly int _passwordHash;
+        public Role Role { get; set; }
         
+        public string PasswordHash { get; set; }
+        public List<Attempt> Attempts { get; set; }
 
-        public User(int id, string name, string lastName, DateTime birthday, string login, int passwordHash)
+        public User(string name, string lastName, DateTime birthday, string login, string passwordHash) 
         {
-            Id = id;
             Name = name;
             LastName = lastName;
             Birthday = birthday;
             Login = login;
-            _passwordHash = passwordHash;
+            PasswordHash = passwordHash;
+            Attempts = new List<Attempt>();
         }
-
         public User()
         {
             
         }
         
-        public bool CheckPassword(int hash) => _passwordHash.Equals(hash);
+        public bool CheckPassword(string hash) => PasswordHash.Equals(hash);
+
+        public static byte[] GetHash(string inputString)
+        {
+            using (HashAlgorithm algorithm = SHA256.Create())
+                return algorithm.ComputeHash(Encoding.UTF8.GetBytes(inputString));
+        }
+
+        public static string GetHashString(string inputString)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in GetHash(inputString))
+                sb.Append(b.ToString("X2"));
+
+            return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} {LastName}  / {Login} /{Birthday:d}";
+        }
     }
 }

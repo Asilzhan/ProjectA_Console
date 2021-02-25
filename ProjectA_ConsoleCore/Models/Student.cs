@@ -1,23 +1,16 @@
 ﻿using System;
-using System.Data.Common;
-using System.Security.Policy;
 
-namespace ProjectA_Console.Models
+namespace ProjectA_ConsoleCore.Models
 {
     public class Student : User
     {
-        public Student(int id, string name, string lastName, DateTime birthday,
-            int course, string login, int passwordHash) : base(id, name, lastName, birthday, login, passwordHash)
+        public Student(string name, string lastName, DateTime birthday,
+            int course, string login, string passwordHash) : base(name, lastName, birthday, login, passwordHash)
         {
             Course = course;
+            Role = Role.Student;
         }
-
         public int Course { get; set; }
-
-        public Student()
-        {
-            
-        }
     }
 }
 

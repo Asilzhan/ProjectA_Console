@@ -1,156 +1,101 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Channels;
+using Microsoft.EntityFrameworkCore;
+using ProjectA_ConsoleCore.DbContexes;
+using AppContext = ProjectA_ConsoleCore.DbContexes.AppContext;
 
-namespace ProjectA_Console.Models
+namespace ProjectA_ConsoleCore.Models
 {
     public class Model
     {
-        public List<Student> Students { get; set; }
-        public List<Teacher> Teachers { get; set; }
-        public List<Problem> Problems { get; set; }
-        public List<Attempt> Attempts { get; set; }
+        public AppContext AppContext { get; set; }
+        // public List<Problem> Problems => AppContext.Problems.Include(problem => problem.TestCases).ToList();
 
+        public List<Problem> Problems => AppContext.Teachers.SelectMany(teacher => teacher.MyProblems).Include(problem => problem.TestCases).ToList();
+        public List<User> Users => AppContext.Students.ToList<User>().Concat(AppContext.Teachers.ToList()).ToList();
         public Model()
         {
-            // Students = new List<Student>();
-            Teachers = new List<Teacher>();
-            // Problems = new List<Problem>();
-            Attempts = new List<Attempt>();
-
-            Problems = LoadExampleProblems();
-            Students = LoadExampleStudents();
+            AppContext = new AppContext();
         }
 
-        private List<Problem> LoadExampleProblems()
+        #region Methods
+
+        public void AddTeacher(string name, string lastName, DateTime birthday, string login, string passwordHash)
         {
-            return new List<Problem>()
-            {
-                new Problem()
-                {
-                    Id = 1,
-                    Title = "a*2",
-                    Text =
-                        @"Бір бүтін сан беріледі. осы санды екіге көбейткендегі мәнін экранға шығару керек",
-                    TestCases = new List<TestCase>()
-                    {
-                        new TestCase("4", "8"),
-                        new TestCase("8", "16")
-                    }
-                },
-                new Problem()
-                {
-                    Id = 2,
-                    Title = "Гипотенуза",
-                    Text =
-                        @"Дано два числа a и b. Найдите гипотенузу треугольника с заданными катетами.
-
-Входные данные
-В двух строках вводятся два числа (числа целые,положительные, не превышают 1000).
-
-Выходные данные
-Выведите ответ на задачу.",
-                    TestCases = new List<TestCase>()
-                    {
-                        new TestCase("3 4", "5"),
-                        new TestCase("8 6", "10")
-                    }
-                },
-                new Problem()
-                {
-                    Id = 3,
-                    Title = "Дележ яблок - 1",
-                    Text =
-                        @"N школьников делят K яблок поровну, неделящийся остаток остается в корзинке. Сколько яблок достанется каждому школьнику?
-
-Входные данные
-Программа получает на вход числа N и K.
-
-Выходные данные
-Программа должна вывести искомое количество яблок.",
-                    TestCases = new List<TestCase>()
-                    {
-                        new TestCase("3\n14", "4"),
-                        new TestCase("8\n15", "1"),
-                        new TestCase("8\n17", "2")
-                    }
-                },
-                new Problem()
-                {
-                    Id = 4,
-                    Title = "Дележ яблок - 1",
-                    Text =
-                        @"N школьников делят K яблок поровну, неделящийся остаток остается в корзинке. Сколько яблок останется в корзинке?
-
-Входные данные
-Программа получает на вход числа N и K.
-
-Выходные данные
-Программа должна вывести искомое количество яблок.",
-                    TestCases = new List<TestCase>()
-                    {
-                        new TestCase("3\n14", "2"),
-                        new TestCase("8\n15", "7"),
-                        new TestCase("8\n17", "1")
-                    }
-                }
-            };
-        }
-
-        private List<Student> LoadExampleStudents()
-        {
-            return new List<Student>()
-            {
-                new Student(1, "Асылжан", "Жансейт", DateTime.Parse("11.01.2001"), 3, "asilzhan",
-                    "qwerty".GetHashCode()),
-                new Student(1, "Алмат", "Ергеш", DateTime.Parse("12.05.2000"), 3, "almat", "1234".GetHashCode()),
-            };
-        }
-
-        public List<Problem> GetProblemsByTeacherId(int teacherId)
-        {
-            return Problems.FindAll(problem => problem.Id == teacherId);
-        }
-
-        public bool TryAddStudent(string name, string lastName, DateTime born, int course, string login, int passHash)
-        {
-            if (Students.Exists(s => (s.Name == name && s.LastName == lastName) || s.Login == login))
-            {
-                return false; // Бұндай атты немесе логинді студент бар болса
-            }
-
-            int id = 1;
-            if (Students.Count != 0) id = Students.Max(s => s.Id) + 1;
-            Student student = new Student(id, name, lastName, born, course, login, passHash);
-            Students.Add(student);
-            return true;
-        }
-
-        public Problem AddProblem(string title, string text)
-        {
-            int id = 1;
-            if (Problems.Count != 0) id = Problems.Max(s => s.Id) + 1;
-            Problem problem = new Problem() {Id = id, Title = title, Text = text};
-            return problem;
+            AppContext.Teachers.Add(new Teacher(name, lastName, birthday, login, passwordHash));
+            AppContext.SaveChanges();
         }
 
         public Attempt AddAttemption(User user, Problem problem)
         {
-            int id = 1;
-            if (Attempts.Count != 0) id = Attempts.Max(a => a.Id) + 1;
-            var attempt = new Attempt(id, user, problem);
-            return attempt;
+            var t = new Attempt(user, problem);
+            user.Attempts.Add(t);
+            AppContext.Update(user);
+            AppContext.Update(t);
+            return t;
         }
 
-        public bool Authenticated(string login, int password, out Student student)
+        public void AddProblem(Teacher teacher, Problem problem)
         {
-            student = Students.Find(std => std.Login == login && std.CheckPassword(password));
-            return !(student is null);
+            teacher.MyProblems.Add(problem);
+            AppContext.Update(teacher);
+        }
+        public bool Authenticated(string login, string passHash, out User user)
+        {
+            var students = AppContext.Students.ToList();
+            var teachers = AppContext.Teachers.Include(teacher => teacher.MyProblems).ThenInclude(problem => problem.TestCases).ToList();
+            var admins = AppContext.Administrators.ToList();
+            
+            var t1 = students.Find(u => u.Login == login && u.CheckPassword(passHash));
+            if (t1 != null)
+            {
+                user = t1;
+                return true;
+            }
+            
+            var t2 = teachers.Find(u => u.Login == login && u.CheckPassword(passHash));
+            if (t2 != null)
+            {
+                user = t2;
+                return true;
+            }
+            
+            var t3 = admins.Find(u => u.Login == login && u.CheckPassword(passHash));
+            user = t3;
+            return t3 != null;
         }
 
-        public List<Attempt> GetAttemptsOfStudent(Problem problem, Student currentStudent)
+        public List<Attempt> GetAttemptsOfStudent(Problem problem, User currentUser)
         {
-            return Attempts.FindAll(attempt => attempt.Problem == problem && attempt.User == currentStudent);
+            return AppContext.Attempts.AsParallel()
+                .Where(attempt => attempt.Problem == problem && attempt.User == currentUser).ToList();
+        }
+        
+        #endregion
+
+        public bool TryAddStudent(string name, string lastName, DateTime birthday, int course, string login, string passwordHash)
+        {
+            if (AppContext.Students.Any(u => u.Login == login)) return false;
+            Student student = new Student(name, lastName, birthday, course, login, passwordHash);
+            AppContext.Students.Add(student);
+            AppContext.SaveChangesAsync();
+            return true;
+        }
+
+        public bool RemoveUser(User user)
+        {
+            if (user == null) return false;
+            if (user.Role == Role.Student)
+            {
+                AppContext.Students.Remove(user as Student);
+            } else if (user.Role == Role.Teacher)
+            {
+                AppContext.Teachers.Remove(user as Teacher);
+            }
+            AppContext.SaveChanges();
+            return true;
         }
     }
 }
