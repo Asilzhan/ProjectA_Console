@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
 using ProjectA_ConsoleCore.DbContexes;
 using AppContext = ProjectA_ConsoleCore.DbContexes.AppContext;
@@ -13,6 +14,7 @@ namespace ProjectA_ConsoleCore.Models
         // public List<Problem> Problems => AppContext.Problems.Include(problem => problem.TestCases).ToList();
 
         public List<Problem> Problems => AppContext.Teachers.SelectMany(teacher => teacher.MyProblems).Include(problem => problem.TestCases).ToList();
+        public List<User> Users => AppContext.Students.ToList<User>().Concat(AppContext.Teachers.ToList()).ToList();
         public Model()
         {
             AppContext = new AppContext();
@@ -79,6 +81,20 @@ namespace ProjectA_ConsoleCore.Models
             Student student = new Student(name, lastName, birthday, course, login, passwordHash);
             AppContext.Students.Add(student);
             AppContext.SaveChangesAsync();
+            return true;
+        }
+
+        public bool RemoveUser(User user)
+        {
+            if (user == null) return false;
+            if (user.Role == Role.Student)
+            {
+                AppContext.Students.Remove(user as Student);
+            } else if (user.Role == Role.Teacher)
+            {
+                AppContext.Teachers.Remove(user as Teacher);
+            }
+            AppContext.SaveChanges();
             return true;
         }
     }

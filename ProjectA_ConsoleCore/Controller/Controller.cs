@@ -40,7 +40,7 @@ namespace ProjectA_ConsoleCore.Controller
                         if (Authenfication())
                         {
                             Clear();
-                            view.ShowHappy(CurrentUser.Name);
+                            // view.ShowHappy(CurrentUser.Name);
                             switch (CurrentUser.Role)
                             {
                                 case Role.Administrator:
@@ -103,7 +103,7 @@ namespace ProjectA_ConsoleCore.Controller
             int cmd;
             while (true)
             {
-                view.ProfileMenu();
+                view.ProfileMenu(CurrentUser.Name + " " + CurrentUser.LastName);
                 cmd = view.ReadInt();
                 
                 switch (cmd)
@@ -122,7 +122,7 @@ namespace ProjectA_ConsoleCore.Controller
                         SelectProblems();
                         break;
                     case 3:
-                        ProfileCommand(CurrentUser);
+                        ProfileCommand();
                         break;
                     case 0:
                         return;
@@ -130,18 +130,13 @@ namespace ProjectA_ConsoleCore.Controller
             }
         }
 
-        private void ProfileCommand(User currentUser)
-        {
-            Clear();
-            view.Print(CurrentUser);
-            EditCommand(CurrentUser);
-        }
-
-        private void EditCommand(User currentUser)
+        private void ProfileCommand()
         {
             int cmd;
             while (true)
             {
+                Clear();
+                view.Print(CurrentUser);
                 view.EditMenu();
                 cmd = view.ReadInt();
                 
@@ -157,10 +152,17 @@ namespace ProjectA_ConsoleCore.Controller
         }
         private void EditPass()
         {
-            CurrentUser.PasswordHash =  view.ReadPass();
+            string lastPass = view.ReadPass("Ескі парольіңізді енгізіңіз: ");
+            if (lastPass != CurrentUser.PasswordHash)
+            {
+                view.Println("Пароль қате! Парольді өзгерте алмайсыз");
+                return;
+            }
+            CurrentUser.PasswordHash =  view.ReadPass("Жаңа пароль енгізіңіз: ");
             model.AppContext.Update(CurrentUser);
             model.AppContext.SaveChanges();
             view.Print("Пароль сәтті түрде өзгертілді!!!\n", ConsoleColor.Green);
+            view.Wait();
         }
         
         private void SelectProblems(List<Problem> list = null)
@@ -171,6 +173,7 @@ namespace ProjectA_ConsoleCore.Controller
                 list = model.Problems;
             }
             var problem = view.Select(list);
+            if(problem == null) return;
             StudentProblemCommand(problem);
         }
 
@@ -202,21 +205,13 @@ namespace ProjectA_ConsoleCore.Controller
                 
             }
         }
-        
-
-        private void ProfileCommand()
-        {
-            Clear();
-            view.Print(CurrentUser);
-            EditCommand(CurrentUser);
-        }
 
         private void TeacherCommand()
         {
             int cmd;
             while (true)
             {
-                view.ProfileMenu();
+                view.ProfileMenu(CurrentUser.Name + " " + CurrentUser.LastName);
                 cmd = view.ReadInt();
                 
                 switch (cmd)
@@ -248,6 +243,7 @@ namespace ProjectA_ConsoleCore.Controller
             int cmd;
             while (true)
             {
+                Clear();
                 view.TeacherProblemMenu();
                 cmd = view.ReadInt(maxValue:3);
                 
@@ -270,6 +266,7 @@ namespace ProjectA_ConsoleCore.Controller
 
         private void AddProblem()
         {
+            Clear();
             string title = view.ReadString("Есептің тақырыбы: ");
             string text = view.ReadRichString();
             List<TestCase> cases = view.ReadTestCases();
@@ -279,12 +276,6 @@ namespace ProjectA_ConsoleCore.Controller
             model.AppContext.Update(CurrentUser);
             model.AppContext.Update(problem);
             model.AppContext.SaveChanges();
-        }
-        
-        private void TeacherProblemsCommand()
-        {
-            var t = CurrentUser as Teacher;
-            var problem = view.Select(t.MyProblems);
         }
 
         private void Search()
@@ -299,7 +290,7 @@ namespace ProjectA_ConsoleCore.Controller
             int cmd;
             while (true)
             {
-                view.AdministratorMenu();
+                view.AdministratorMenu(CurrentUser.Name + " " + CurrentUser.LastName);
                 cmd = view.ReadInt();
                 
                 switch (cmd)
@@ -308,14 +299,32 @@ namespace ProjectA_ConsoleCore.Controller
                         AddTeacher();
                         break;
                     case 2:
-                       ProfileCommand(CurrentUser); 
+                        RemoveUser();
                         break;
+                    case 3:
+                       ProfileCommand(); 
+                        break;
+                    
                     case 0:
                         return;
                 }
             }
         }
-        
+
+        private void RemoveUser()
+        {
+            var user = view.Select(model.Users);
+            if (user == null ||
+                !view.YesOrNo($"{user.Name} {user.LastName} пайдаланушы аккаунты жүйеден жойылады. Сенімдісіз бе?"))
+                return;
+            if (model.RemoveUser(user))
+            {
+                view.Println("Пайдаланушы сәтті жойылды! ");
+            } else view.Println("Пайдаланушыны жою барысында қателік шықты! ");
+            view.Wait();
+            
+        }
+
         private void AddTeacher()
         {
             Clear();

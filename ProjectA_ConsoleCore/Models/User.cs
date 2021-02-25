@@ -48,5 +48,10 @@ namespace ProjectA_ConsoleCore.Models
 
             return sb.ToString();
         }
+
+        public override string ToString()
+        {
+            return $"{Name} {LastName}  / {Login} /{Birthday:d}";
+        }
     }
 }
