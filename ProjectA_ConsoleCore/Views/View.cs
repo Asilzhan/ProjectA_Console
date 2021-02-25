@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using ProjectA_ConsoleCore.Helper;
 using ProjectA_ConsoleCore.Models;
 using  static System.Console;
 
@@ -88,7 +89,7 @@ namespace ProjectA_ConsoleCore.Views
             var f = ForegroundColor;
             ForegroundColor = color;
             int res=-1;
-            while (!int.TryParse(ReadLine(), out res) || res >= maxValue)
+            while (!int.TryParse(ReadLine(), out res) || res > maxValue)
             {
                 ShowError();
                 Print($"{key}>> ");
@@ -252,11 +253,9 @@ namespace ProjectA_ConsoleCore.Views
             WriteLine($"|{user.Role, 20}          |");
             WriteLine($"+------------------------------+");
         }
+        
         #endregion
-
-       
-        #endregion
-
+        
         public bool YesOrNo(string message="")
         {
             Print($"{message} (y/n)");

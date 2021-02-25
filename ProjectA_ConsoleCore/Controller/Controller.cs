@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -158,6 +159,7 @@ namespace ProjectA_ConsoleCore.Controller
         {
             CurrentUser.PasswordHash =  view.ReadPass();
             model.AppContext.Update(CurrentUser);
+            model.AppContext.SaveChanges();
             view.Print("Пароль сәтті түрде өзгертілді!!!\n", ConsoleColor.Green);
         }
         
@@ -204,7 +206,9 @@ namespace ProjectA_ConsoleCore.Controller
 
         private void ProfileCommand()
         {
-            throw new NotImplementedException();
+            Clear();
+            view.Print(CurrentUser);
+            EditCommand(CurrentUser);
         }
 
         private void TeacherCommand()
@@ -274,6 +278,7 @@ namespace ProjectA_ConsoleCore.Controller
             // model.AppContext.Problems.Add(problem);
             model.AppContext.Update(CurrentUser);
             model.AppContext.Update(problem);
+            model.AppContext.SaveChanges();
         }
         
         private void TeacherProblemsCommand()

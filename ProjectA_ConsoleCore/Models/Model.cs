@@ -23,6 +23,7 @@ namespace ProjectA_ConsoleCore.Models
         public void AddTeacher(string name, string lastName, DateTime birthday, string login, string passwordHash)
         {
             AppContext.Teachers.Add(new Teacher(name, lastName, birthday, login, passwordHash));
+            AppContext.SaveChanges();
         }
 
         public Attempt AddAttemption(User user, Problem problem)
@@ -42,7 +43,7 @@ namespace ProjectA_ConsoleCore.Models
         public bool Authenticated(string login, string passHash, out User user)
         {
             var students = AppContext.Students.ToList();
-            var teachers = AppContext.Teachers.Include(teacher => teacher.MyProblems).ToList();
+            var teachers = AppContext.Teachers.Include(teacher => teacher.MyProblems).ThenInclude(problem => problem.TestCases).ToList();
             var admins = AppContext.Administrators.ToList();
             
             var t1 = students.Find(u => u.Login == login && u.CheckPassword(passHash));

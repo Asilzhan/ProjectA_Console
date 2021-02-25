@@ -30,7 +30,7 @@ namespace ProjectA_ConsoleCore.DbContexes
             });
             Administrators.Add(new Administrator("Бахытжан", "Ассилбеков", DateTime.Parse("02.12.1982"), "assilbekov",
                 User.GetHashString("kaznpu")));
-            // Problems.AddRange(AddProblem());
+            Problems.AddRange(AddProblem());
             SaveChanges();
         }
         private List<Student> StudentsSampleData()
