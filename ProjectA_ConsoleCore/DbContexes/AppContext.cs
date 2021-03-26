@@ -15,7 +15,7 @@ namespace ProjectA_ConsoleCore.DbContexes
         public AppContext()
         {
             Database.EnsureCreated();
-            // AddSampleData();
+            //AddSampleData(); // Бірінші рет программаны қосқан кезде локальный база данных-қа ақпаратты жазады. Кейінгі қосу барысында комментке алып қоя салсаңыз болады. 
         }
 
         private void AddSampleData()
@@ -67,7 +67,8 @@ namespace ProjectA_ConsoleCore.DbContexes
                     {
                         new TestCase("3\n4", "5"),
                         new TestCase("8\n6", "10")
-                    }
+                    },
+                    Point = 400
                 },
                 
                 new Problem()
@@ -86,7 +87,8 @@ namespace ProjectA_ConsoleCore.DbContexes
                         new TestCase("3\n14", "4"),
                         new TestCase("8\n15", "1"),
                         new TestCase("8\n17", "2")
-                    }
+                    },
+                    Point = 400
                 },
                 
                 new Problem()
@@ -105,7 +107,8 @@ namespace ProjectA_ConsoleCore.DbContexes
                         new TestCase("3\n14", "2"),
                         new TestCase("8\n15", "7"),
                         new TestCase("8\n17", "1")
-                    }
+                    },
+                    Point = 300
                 }
             };
         }

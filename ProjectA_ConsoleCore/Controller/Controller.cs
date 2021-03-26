@@ -451,7 +451,7 @@ namespace ProjectA_ConsoleCore.Controller
             if(verdict == Verdict.Accepted)
                 view.Print("Дұрыс жауап!\n", ConsoleColor.Green);
             else 
-                view.Print("Қате жауап!\n", ConsoleColor.Green);
+                view.Print("Қате жауап!\n", ConsoleColor.Red);
             ReadKey();
         }
 

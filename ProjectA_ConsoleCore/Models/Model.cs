@@ -13,8 +13,11 @@ namespace ProjectA_ConsoleCore.Models
         public AppContext AppContext { get; set; }
         // public List<Problem> Problems => AppContext.Problems.Include(problem => problem.TestCases).ToList();
 
-        public List<Problem> Problems => AppContext.Teachers.SelectMany(teacher => teacher.MyProblems).Include(problem => problem.TestCases).ToList();
+        public List<Problem> Problems => AppContext.Teachers.SelectMany(teacher => teacher.MyProblems)
+            .Include(problem => problem.TestCases).ToList();
+
         public List<User> Users => AppContext.Students.ToList<User>().Concat(AppContext.Teachers.ToList()).ToList();
+
         public Model()
         {
             AppContext = new AppContext();
@@ -42,26 +45,28 @@ namespace ProjectA_ConsoleCore.Models
             teacher.MyProblems.Add(problem);
             AppContext.Update(teacher);
         }
+
         public bool Authenticated(string login, string passHash, out User user)
         {
             var students = AppContext.Students.ToList();
-            var teachers = AppContext.Teachers.Include(teacher => teacher.MyProblems).ThenInclude(problem => problem.TestCases).ToList();
+            var teachers = AppContext.Teachers.Include(teacher => teacher.MyProblems)
+                .ThenInclude(problem => problem.TestCases).ToList();
             var admins = AppContext.Administrators.ToList();
-            
+
             var t1 = students.Find(u => u.Login == login && u.CheckPassword(passHash));
             if (t1 != null)
             {
                 user = t1;
                 return true;
             }
-            
+
             var t2 = teachers.Find(u => u.Login == login && u.CheckPassword(passHash));
             if (t2 != null)
             {
                 user = t2;
                 return true;
             }
-            
+
             var t3 = admins.Find(u => u.Login == login && u.CheckPassword(passHash));
             user = t3;
             return t3 != null;
@@ -72,10 +77,11 @@ namespace ProjectA_ConsoleCore.Models
             return AppContext.Attempts.AsParallel()
                 .Where(attempt => attempt.Problem == problem && attempt.User == currentUser).ToList();
         }
-        
+
         #endregion
 
-        public bool TryAddStudent(string name, string lastName, DateTime birthday, int course, string login, string passwordHash)
+        public bool TryAddStudent(string name, string lastName, DateTime birthday, int course, string login,
+            string passwordHash)
         {
             if (AppContext.Students.Any(u => u.Login == login)) return false;
             Student student = new Student(name, lastName, birthday, course, login, passwordHash);
@@ -90,10 +96,12 @@ namespace ProjectA_ConsoleCore.Models
             if (user.Role == Role.Student)
             {
                 AppContext.Students.Remove(user as Student);
-            } else if (user.Role == Role.Teacher)
+            }
+            else if (user.Role == Role.Teacher)
             {
                 AppContext.Teachers.Remove(user as Teacher);
             }
+
             AppContext.SaveChanges();
             return true;
         }

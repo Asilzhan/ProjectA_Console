@@ -236,7 +236,7 @@ namespace ProjectA_ConsoleCore.Views
             }
             WriteLine(new string('-',120));
         }
-
+        
         #endregion
 
         #region Select
