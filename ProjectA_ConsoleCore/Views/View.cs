@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using ProjectA_ConsoleCore.Helper;
 using ProjectA_ConsoleCore.Models;
 using  static System.Console;
@@ -12,6 +10,21 @@ namespace ProjectA_ConsoleCore.Views
     {
         #region Menu
 
+        // Директордың бас менюі
+        public void DirectorMenu(string name = "")
+        {
+            ShowHappy(name);
+            WriteLine("[1] - Жұмысшылар туралы ақпарат\n" +
+                      "[2] - Айлық есептеу\n" +
+                      "[0] - Артқа");
+        }
+        // Жұмысшы туралы меню
+        public void EmployeeInfoMenu()
+        {
+            WriteLine("[1] - Жалақысын өзгерту\n" +
+                      "[2] - Жұмыстан шығару\n" +
+                      "[0] - Артқа");
+        }
         public void MainMenu()
         {
             WriteLine("[1] - Кіру\n" +
@@ -91,6 +104,22 @@ namespace ProjectA_ConsoleCore.Views
 
         #region Read
         
+        public double ReadDouble(string key = "double", double minValue = 0, double maxValue = double.MaxValue, ConsoleColor color = ConsoleColor.White)
+        {
+            Print($"{key}>> ");
+
+            var f = ForegroundColor;
+            ForegroundColor = color;
+            double res=-1;
+            while (!double.TryParse(ReadLine(), out res) || res > maxValue || res < 0)
+            {
+                ShowError();
+                Print($"{key}>> ");
+            }
+
+            return res;
+        }
+
         public int ReadInt(string key = "int", int maxValue = Int32.MaxValue, ConsoleColor color = ConsoleColor.White)
         {
             Print($"{key}>> ");
@@ -98,7 +127,7 @@ namespace ProjectA_ConsoleCore.Views
             var f = ForegroundColor;
             ForegroundColor = color;
             int res=-1;
-            while (!int.TryParse(ReadLine(), out res) || res > maxValue)
+            while (!int.TryParse(ReadLine(), out res) || res > maxValue || res < 0)
             {
                 ShowError();
                 Print($"{key}>> ");
@@ -221,7 +250,15 @@ namespace ProjectA_ConsoleCore.Views
             WriteLine($"|{user.Role, 20}          |");
             WriteLine($"+------------------------------+\n");
         }
-
+        /*----Оқытушы туралы ақпратты эканға шығару методы----*/
+        public void Print(Teacher teacher)
+        {
+            Print(teacher as User);     // Жалпы ақпарат
+            // Және қосымша ақпарат
+            WriteLine($"|Жалақы: {teacher.Salary, 22:C}|");
+            WriteLine($"|Есеп қосты: {teacher.MyProblems.Count, 18}|");
+            WriteLine($"+------------------------------+\n");
+        }
         public void Print(Problem problem)
         {
             WriteLine(new string('-',120));
@@ -259,5 +296,11 @@ namespace ProjectA_ConsoleCore.Views
         }
         
         #endregion
+
+        public void PrintSalary(Teacher teacher, double salary)
+        {
+            Println("Берілетін жалақы мөлшері: ");
+            Println($"{teacher.LastName} {teacher.Name}, {salary:C0}");
+        }
     }
 }

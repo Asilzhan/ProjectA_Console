@@ -4,6 +4,7 @@
     {
         Administrator,
         Student,
-        Teacher
+        Teacher,
+        Director    // Директорды сипаттайды
     }
 }

@@ -10,12 +10,13 @@ namespace ProjectA_ConsoleCore.DbContexes
         public DbSet<Student> Students { get; set; }
         public DbSet<Teacher> Teachers { get; set; }
         public DbSet<Administrator> Administrators { get; set; }
+        public DbSet<Director> Directors { get; set; }  // Директорларды базада сақтайтын кесте қасиеті
         public DbSet<Problem> Problems { get; set; }
         public DbSet<Attempt> Attempts { get; set; }
         public AppContext()
         {
             Database.EnsureCreated();
-            // AddSampleData();
+            AddSampleData();
         }
 
         private void AddSampleData()
@@ -26,11 +27,21 @@ namespace ProjectA_ConsoleCore.DbContexes
             Teachers.Add(new Teacher("Малика", "Абрахманова", DateTime.Parse("05.05.1988"), "malika",
                 User.GetHashString("asdfg"))
             {
-                MyProblems = AddProblem()
+                MyProblems = AddProblem(),
+                Salary = 130000 // Оқытушының жалақысын анықтау
             });
             Administrators.Add(new Administrator("Бахытжан", "Ассилбеков", DateTime.Parse("02.12.1982"), "assilbekov",
                 User.GetHashString("kaznpu")));
             Problems.AddRange(AddProblem());
+            
+            /*------------------------Базаға жаңа директор қосу------------------------*/
+            Directors.Add(new Director("Байдаулет", "Урмашев", DateTime.Parse("04.02.1972"), "baiden",
+                User.GetHashString("bigboss"))
+            {
+                DailyOverworkBonus = 1000,
+                ProblemCountPerDay = 3
+            });
+            
             SaveChanges();
         }
         private List<Student> StudentsSampleData()
@@ -67,7 +78,8 @@ namespace ProjectA_ConsoleCore.DbContexes
                     {
                         new TestCase("3\n4", "5"),
                         new TestCase("8\n6", "10")
-                    }
+                    },
+                    Created = DateTime.Today    // Есептің қосылған уақытын анықтау
                 },
                 
                 new Problem()
@@ -86,7 +98,8 @@ namespace ProjectA_ConsoleCore.DbContexes
                         new TestCase("3\n14", "4"),
                         new TestCase("8\n15", "1"),
                         new TestCase("8\n17", "2")
-                    }
+                    },
+                    Created = DateTime.Today    // Есептің қосылған уақытын анықтау
                 },
                 
                 new Problem()
@@ -105,7 +118,8 @@ namespace ProjectA_ConsoleCore.DbContexes
                         new TestCase("3\n14", "2"),
                         new TestCase("8\n15", "7"),
                         new TestCase("8\n17", "1")
-                    }
+                    },
+                    Created = DateTime.Today    // Есептің қосылған уақытын анықтау
                 }
             };
         }

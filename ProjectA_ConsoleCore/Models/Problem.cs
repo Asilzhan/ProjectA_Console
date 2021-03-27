@@ -9,7 +9,7 @@ namespace ProjectA_ConsoleCore.Models
         public string Title { get; set; }
         public string Text { get; set; }
         public List<TestCase> TestCases { get; set; }
-        public DateTime Created { get; set; }
+        public DateTime Created { get; set; }   // Есептің жасалған уақытын сипаттайтын қасиет
         public void AddTestCase(string input, string output)
         {
             TestCases.Add(new TestCase(input, output));

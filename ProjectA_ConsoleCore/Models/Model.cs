@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
-using ProjectA_ConsoleCore.DbContexes;
 using AppContext = ProjectA_ConsoleCore.DbContexes.AppContext;
 
 namespace ProjectA_ConsoleCore.Models
@@ -14,7 +12,10 @@ namespace ProjectA_ConsoleCore.Models
         // public List<Problem> Problems => AppContext.Problems.Include(problem => problem.TestCases).ToList();
 
         public List<Problem> Problems => AppContext.Teachers.SelectMany(teacher => teacher.MyProblems).Include(problem => problem.TestCases).ToList();
-        public List<User> Users => AppContext.Students.ToList<User>().Concat(AppContext.Teachers.ToList()).ToList();
+        public List<User> Users => AppContext.Students.ToList() // Студенттерді қосамыз
+            .Concat<User>(AppContext.Teachers.ToList())         // Оқытушыларды қосамыз
+            .Concat(AppContext.Administrators.ToList())         // Администраторларды қосамыз 
+            .Concat(AppContext.Directors.ToList()).ToList();    // Директорларды қосамыз
         public Model()
         {
             AppContext = new AppContext();
@@ -44,27 +45,8 @@ namespace ProjectA_ConsoleCore.Models
         }
         public bool Authenticated(string login, string passHash, out User user)
         {
-            var students = AppContext.Students.ToList();
-            var teachers = AppContext.Teachers.Include(teacher => teacher.MyProblems).ThenInclude(problem => problem.TestCases).ToList();
-            var admins = AppContext.Administrators.ToList();
-            
-            var t1 = students.Find(u => u.Login == login && u.CheckPassword(passHash));
-            if (t1 != null)
-            {
-                user = t1;
-                return true;
-            }
-            
-            var t2 = teachers.Find(u => u.Login == login && u.CheckPassword(passHash));
-            if (t2 != null)
-            {
-                user = t2;
-                return true;
-            }
-            
-            var t3 = admins.Find(u => u.Login == login && u.CheckPassword(passHash));
-            user = t3;
-            return t3 != null;
+            /*----------Аутентификация логикасы жақсартылды----------*/
+            return (user = Users.Find(u => u.Login == login && u.CheckPassword(passHash))) != null;
         }
 
         public List<Attempt> GetAttemptsOfStudent(Problem problem, User currentUser)
@@ -84,6 +66,7 @@ namespace ProjectA_ConsoleCore.Models
             return true;
         }
 
+        /*----Оқытушыны өшіруге арналған RemoveUser методы асыра жүктелді----*/
         public bool RemoveUser(User user)
         {
             if (user == null) return false;
@@ -93,9 +76,19 @@ namespace ProjectA_ConsoleCore.Models
             } else if (user.Role == Role.Teacher)
             {
                 AppContext.Teachers.Remove(user as Teacher);
+            } else if (user.Role == Role.Director)
+            {
+                AppContext.Directors.Remove(user as Director);
             }
             AppContext.SaveChanges();
             return true;
+        }
+
+        /*-------Жалақыны өзгертуге арналған метод қосылды-------*/
+        public void ChangeSalary(Teacher teacher, double newSalary)
+        {
+            teacher.Salary = newSalary;
+            AppContext.SaveChangesAsync();
         }
     }
 }

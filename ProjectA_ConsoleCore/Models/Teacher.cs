@@ -13,5 +13,12 @@ namespace ProjectA_ConsoleCore.Models
             Role = Role.Teacher;
             MyProblems = new List<Problem>();
         }
+
+        public double Salary { get; set; }  // Жалақыны сипаттайтын қасиет
+        // ToString() методын асыра жүктеу
+        public override string ToString()
+        {
+            return base.ToString() + $" / {MyProblems.Count} есеп.";
+        }
     }
 }

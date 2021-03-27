@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -51,6 +52,9 @@ namespace ProjectA_ConsoleCore.Controller
                                     break;
                                 case Role.Teacher:
                                     TeacherCommand();
+                                    break;
+                                case Role.Director:     // Директорға арнап меню командасы құрылды
+                                    DirectorCommand();
                                     break;
                                 default:
                                     throw new ArgumentOutOfRangeException();
@@ -202,7 +206,6 @@ namespace ProjectA_ConsoleCore.Controller
                         ReadKey();
                         break;
                 }
-                
             }
         }
 
@@ -282,6 +285,109 @@ namespace ProjectA_ConsoleCore.Controller
         {
             throw new NotImplementedException();
         }
+
+        #region Director
+
+        /*----Директор менюінің командасы----*/
+        private void DirectorCommand()
+        {
+            while (true)
+            {
+                Clear();
+                view.DirectorMenu(CurrentUser.Name + " " + CurrentUser.LastName);
+                var cmd = view.ReadInt(maxValue:2); 
+                switch (cmd)
+                {
+                    case 1:
+                        EmployeeInfoCommand();  // Жұмысшылар жайлы ақпаратты экранға шығару
+                        break;
+                    case 2:
+                        IssueSalaryCommand();   // Жалақыны төлеу методы
+                        break;
+                    case 0:
+                        return;
+                }
+            }
+        }
+        
+        /*----Жұмысшылар жайлы ақпаратты экранға шығару----*/
+        private void EmployeeInfoCommand()
+        {
+            // Барлық оқытушылар туралы ақпаратты экранға шығарамыз және бір оқытушыны таңдаймыз
+            var teacher = view.Select(model.Users.Where(user => user.Role == Role.Teacher).ToList()) as Teacher;
+            if (teacher == null) return;    // Егер оқытушы таңдалмаса, методтан шығамыз
+
+            while (true)
+            {
+                view.Print(teacher);    // Оқытушы жайлы толық ақпаратты шығарамыз
+                view.EmployeeInfoMenu();
+                var cmd = view.ReadInt(maxValue: 2);
+                switch (cmd)
+                {
+                    case 1:
+                        ChangeSalary(teacher);  // Оқытушының жалақысын өзгерту методы
+                        break;
+                    case 2:
+                        RemoveUser(teacher);    // Оқытушыны жүйеден жою методы
+                        break;
+                    case 0:
+                        return;
+                }
+            }
+        }
+        /*----Оқытушының жалақысын өзгерту методы----*/
+        private void ChangeSalary(Teacher teacher)
+        {
+            view.Print($"Бұрынғы жалақы: {teacher.Salary}\nЖаңа жалақыны енгізіңіз: ");
+            double newSalary = view.ReadDouble();
+            model.ChangeSalary(teacher, newSalary);
+        }
+        
+        /*----Оқытушыны жүйеден жою методы----*/
+        private void RemoveUser(Teacher teacher)
+        {
+            if (!view.YesOrNo(
+                $"{teacher.Name} {teacher.LastName} пайдаланушы аккаунты жүйеден жойылады. Сенімдісіз бе?"))
+                return;
+
+            view.Println(model.RemoveUser(teacher)
+                ? "Пайдаланушы сәтті жойылды! "
+                : "Пайдаланушыны жою барысында қателік шықты! ");
+            view.Wait();
+
+        }
+        
+        /*----Жалақыны төлеу методы----*/
+        private void IssueSalaryCommand()
+        {
+            Clear();
+            var teachers = model.Users.OfType<Teacher>().ToList(); // Барлық оқытушыларды бөліп аламыз
+            foreach (var teacher in teachers)       // Әрбір оқытушы үшін жалақыны есептейміз
+            {
+                double salary = teacher.Salary;
+                AddBonus(teacher, ref salary);      // Артық есеп қосқаны үшін сыйақы жариялаймыз
+                view.PrintSalary(teacher, salary);  // Жалақы өлшерін экранға шығарамыз
+            }
+            view.Wait();
+        }
+
+        private void AddBonus(Teacher teacher, ref double salary)
+        {
+            // Оқытушының орсы айда қосқан есептерін бөліп аламыз
+            // Содан кейін оларды қосылған күні бойынша топтаймыз
+            var days = teacher.MyProblems.Where(p=>p.Created.Month == DateTime.Today.Month).GroupBy(problem => problem.Created.Date);
+            foreach (var day in days)       // Әрбір күн үшін сыйақыны есептейміз
+            {
+                // Егер осы күні қосылған есептер саны нормаға жетсе немесе асса
+                if (day.ToList().Count >= ((Director) CurrentUser).ProblemCountPerDay)
+                {
+                    // Жалақыға сыйақы мөлшерін қосамыз
+                    salary += ((Director) CurrentUser).DailyOverworkBonus;
+                }
+            }
+        }
+
+        #endregion
         
         #region Administrator
 
