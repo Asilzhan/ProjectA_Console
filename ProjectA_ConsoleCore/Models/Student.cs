@@ -11,6 +11,9 @@ namespace ProjectA_ConsoleCore.Models
             Role = Role.Student;
         }
         public int Course { get; set; }
+
+        public int CurrentPoint { get; set; }
+        public double Gpa { get; set; }
     }
 }
 

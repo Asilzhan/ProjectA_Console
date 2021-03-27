@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -211,8 +212,8 @@ namespace ProjectA_ConsoleCore.Controller
             int cmd;
             while (true)
             {
-                view.ProfileMenu(CurrentUser.Name + " " + CurrentUser.LastName);
-                cmd = view.ReadInt();
+                view.TeacherMenu(CurrentUser.Name + " " + CurrentUser.LastName);
+                cmd = view.ReadInt(maxValue: 4);
                 
                 switch (cmd)
                 {
@@ -231,6 +232,10 @@ namespace ProjectA_ConsoleCore.Controller
                         break;
                     case 3:
                         ProfileCommand();
+                        break;
+                    // Мониторинг жүргізуге арналган метод
+                    case 4: 
+                        MonitoringStudentProgress();
                         break;
                     case 0:
                         return;
@@ -264,6 +269,50 @@ namespace ProjectA_ConsoleCore.Controller
             }
         }
 
+        private void MonitoringStudentProgress()
+        {
+            int cmd;
+            while (true)
+            {
+                Clear();
+                view.MonitoringStudents(model.Users.OfType<Student>().ToList(), model.Problems); // Мониторинг кестесі
+                view.SendMessageToTheStudentMenu(); 
+                cmd = view.ReadInt(maxValue:2);
+                
+                switch (cmd)
+                {
+                    //TODO Келесі срс жұмысының фундаменті (Event)
+                    case 1:
+                        try
+                        {
+                            SendMessageToTheAllStudents();
+                        }
+                        catch (NotImplementedException notImp)
+                        {
+                            view.Print("Бұл меню жасалу үстінде!!!", ConsoleColor.Green);
+                        }
+                        break;
+                    case 2:
+                        try
+                        {
+                            NoteToTheStudent();
+                        }
+                        catch (NotImplementedException notImp)
+                        {
+                            view.Print("Бұл меню жасалу үстінде!!!", ConsoleColor.Green);
+                        }
+                        break;
+                    case 0:
+                        return;
+                    default:
+                        view.ShowError();
+                        ReadKey();
+                        break;
+                }
+                
+            }
+        }
+
         private void AddProblem()
         {
             Clear();
@@ -279,6 +328,17 @@ namespace ProjectA_ConsoleCore.Controller
         }
 
         private void Search()
+        {
+            throw new NotImplementedException();
+        }
+        
+        //TODO: Event аптасының тапсырмасы
+        private void NoteToTheStudent()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void SendMessageToTheAllStudents()
         {
             throw new NotImplementedException();
         }
@@ -408,6 +468,7 @@ namespace ProjectA_ConsoleCore.Controller
             {
                 RunSolution(problem, assemblyPath, ref attempt);
             }
+            model.AppContext.SaveChanges(); // әрбір жіберілген попыткаларды базада сақтау
             // TODO: model.Attempts.Add(attempt);
         }
 
@@ -447,9 +508,30 @@ namespace ProjectA_ConsoleCore.Controller
                 attempt.TestCases.Add(result);
                 // process.Kill();
             }
-            attempt.Verdict = verdict;
-            if(verdict == Verdict.Accepted)
+
+            //Негізгі есептеулер
+            if (attempt.User is Student student) // студент жағдайын ғана қарастыру
+            {
+                attempt.Verdict = verdict;
+                int acceptedCnt = attempt.User.Attempts.Where(a => a.Problem == problem)
+                    .Count(a => a.Verdict == Verdict.Accepted); // Текущий есептің дұрыс жауаптар саны
+                int cnt = attempt.User.Attempts.Where(a => a.Problem == problem).ToList().Count - acceptedCnt; // штраф анықтау үшін текущий есептің барлық попыткасынан дұрыс жауап санын алып тастау керек. 
+                if (verdict == Verdict.Accepted && acceptedCnt == 1) // тек бірінші дұрыс қана қабылданады. екінші рет қайта жібергенде, ұпай қосылмайды.
+                    student.CurrentPoint += (problem.Point - (cnt * 50)>=150? problem.Point - (cnt * 50): 150); // штраф ұпайын алып тастап currentPoint - қа қосады. Егер өте көп попытка жіберіп, алған ұпайы минимальды көрсеткіштен төмен болса, оғпн минимум ұпай беріледі.
+
+                double percent = 0;
+                if (model.Problems != null)
+                {
+                    percent = student.CurrentPoint * 1.0 / model.Problems.Sum(s => s.Point) * 100; // үлгерімін есептеу
+                }
+
+                student.Gpa = percent;
+            }
+
+            if (verdict == Verdict.Accepted)
+            {
                 view.Print("Дұрыс жауап!\n", ConsoleColor.Green);
+            }
             else 
                 view.Print("Қате жауап!\n", ConsoleColor.Red);
             ReadKey();

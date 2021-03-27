@@ -28,6 +28,18 @@ namespace ProjectA_ConsoleCore.Views
                       "[3] - Профиль\n" +
                       "[0] - Артқа");
         }
+        
+        //Мұғалім менюі
+        public void TeacherMenu(string name)
+        {
+            Clear();
+            ShowHappy(name);
+            WriteLine("[1] - Іздеу\n" +
+                      "[2] - Есептер\n" +
+                      "[3] - Профиль\n" +
+                      "[4] - Студенттер үлгерімін бақылау\n" +
+                      "[0] - Артқа");
+        }
         public void StudentProblemMenu()
         {
             WriteLine("[1] - Жіберу\n" +
@@ -56,6 +68,14 @@ namespace ProjectA_ConsoleCore.Views
         public void EditMenu()
         {
             WriteLine("[1] - Парольді өзгерту\n" +
+                      "[0] - Артқа");
+        }
+        
+        //Мұғалім хабарламасы
+        public void SendMessageToTheStudentMenu()
+        {
+            WriteLine("[1] - Студенттерге хабарлама жіберу\n" +
+                      "[2] - Студентке ескертпе\n" +
                       "[0] - Артқа");
         }
         
@@ -259,5 +279,45 @@ namespace ProjectA_ConsoleCore.Views
         }
         
         #endregion
+
+        // Кесте
+        public void MonitoringStudents(List<Student> students, List<Problem>problems)
+        {
+            Write($"|{"ID",5}|{"Аты", 20}|{"=", 5}|{"Штраф", 7}|");
+            foreach (var problem in problems)
+            {
+                Write($"{problem.Title, 15}|");
+            }
+            WriteLine($"{"Ұпай", 6}|{"Балл", 6}|");
+
+            foreach (var student in students)
+            {
+                int point = student.Attempts.Where(a=>a.Verdict == Verdict.Accepted).Select(a=>a.Problem).Distinct().ToList().Count; //барлық есеп үшін уникальный барлық дұрыс жауап саны.
+                int allPoint = student.Attempts.Where(a=>a.Verdict == Verdict.Accepted).Select(a=>a.Problem).ToList().Count; // әрбір есеп үшін барлық дұрыс жауап саны
+                int shtraf = (student.Attempts.Count - allPoint) * 50; //штраф поинт есептелуі
+                int mark = student.CurrentPoint; // жинаған ұпайы
+                
+                Write($"|{student.Id,5}|{student.Name, 20}|{point, 5}|{shtraf, 7}|");
+                foreach (var problem in problems)
+                {
+                    var atts = student.Attempts.Where(a => a.Problem == problem).ToList(); // Текущий есептің барлық попыткалары
+                    int cnt = atts.Count(a => a.Verdict != Verdict.Accepted); // дұрыс емес жауаптар саны
+                    int acceptedCnt = atts.Count - cnt; //дұрыс жауаптар саны
+                    if (acceptedCnt != 0) //дұрыс шыққан болса
+                    {
+                        Print($"{$"+{(atts.Count - acceptedCnt == 0?"": (atts.Count - acceptedCnt).ToString())}", 15}|", ConsoleColor.Green); //бірінші попыткадан (+) бірнеше попыткадан кейін (+n)
+                    }
+                    else if(cnt != 0) // шықпай қалған есеп үшін
+                    {
+                        Print($"{$"-{cnt}", 15}|", ConsoleColor.Red);
+                    }
+                    else
+                    {
+                        Print($"{"", 15}|");
+                    }
+                }
+                WriteLine($"{mark, 6}|{student.Gpa, 6:F}|");
+            }
+        }
     }
 }

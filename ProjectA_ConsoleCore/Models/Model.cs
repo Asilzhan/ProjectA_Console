@@ -37,6 +37,7 @@ namespace ProjectA_ConsoleCore.Models
             user.Attempts.Add(t);
             AppContext.Update(user);
             AppContext.Update(t);
+            // AppContext.SaveChanges();
             return t;
         }
 
@@ -48,7 +49,7 @@ namespace ProjectA_ConsoleCore.Models
 
         public bool Authenticated(string login, string passHash, out User user)
         {
-            var students = AppContext.Students.ToList();
+            var students = AppContext.Students.Include(s => s.Attempts).ToList(); //базадан студенттер  және попыткалары туралы ақпартты қосы жүктейді.
             var teachers = AppContext.Teachers.Include(teacher => teacher.MyProblems)
                 .ThenInclude(problem => problem.TestCases).ToList();
             var admins = AppContext.Administrators.ToList();

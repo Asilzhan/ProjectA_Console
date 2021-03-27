@@ -15,7 +15,7 @@ namespace ProjectA_ConsoleCore.DbContexes
         public AppContext()
         {
             Database.EnsureCreated();
-            //AddSampleData(); // Бірінші рет программаны қосқан кезде локальный база данных-қа ақпаратты жазады. Кейінгі қосу барысында комментке алып қоя салсаңыз болады. 
+            AddSampleData(); // Бірінші рет программаны қосқан кезде локальный база данных-қа ақпаратты жазады. Кейінгі қосу барысында комментке алып қоя салсаңыз болады. 
         }
 
         private void AddSampleData()
@@ -29,7 +29,7 @@ namespace ProjectA_ConsoleCore.DbContexes
                 MyProblems = AddProblem()
             });
             Administrators.Add(new Administrator("Бахытжан", "Ассилбеков", DateTime.Parse("02.12.1982"), "assilbekov",
-                User.GetHashString("kaznpu")));
+                User.GetHashString("kaznitu")));
             Problems.AddRange(AddProblem());
             SaveChanges();
         }
