@@ -15,7 +15,7 @@ namespace ProjectA_ConsoleCore.DbContexes
         public AppContext()
         {
             Database.EnsureCreated();
-            AddSampleData(); // Бірінші рет программаны қосқан кезде локальный база данных-қа ақпаратты жазады. Кейінгі қосу барысында комментке алып қоя салсаңыз болады. 
+            // AddSampleData(); // Бірінші рет программаны қосқан кезде локальный база данных-қа ақпаратты жазады. Кейінгі қосу барысында комментке алып қоя салсаңыз болады. 
         }
 
         private void AddSampleData()
