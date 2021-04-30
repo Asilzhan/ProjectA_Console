@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.Json;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
+using System.Threading;
+using ProjectA_ConsoleCore.Helper;
 using ProjectA_ConsoleCore.Models;
 using ProjectA_ConsoleCore.Views;
 using static System.Console;
@@ -20,19 +14,22 @@ namespace ProjectA_ConsoleCore.Controller
     {
         View view = new View();
         Model model = new Model();
+        Compiler compiler = new Compiler();
         public User CurrentUser;
 
         #region Main
 
         public void Main()
         {
+            compiler.StatusChanged += view.Rewrite;
+
             int cmd;
             while (true)
             {
                 Clear();
                 view.MainMenu();
                 cmd = view.ReadInt();
-                
+
                 switch (cmd)
                 {
                     case 1:
@@ -56,15 +53,16 @@ namespace ProjectA_ConsoleCore.Controller
                                 default:
                                     throw new ArgumentOutOfRangeException();
                             }
-                        } 
+                        }
                         else
                         {
                             view.ShowError();
-                            ReadKey(); 
+                            ReadKey();
                         }
+
                         break;
                     case 2:
-                        Register(); 
+                        Register();
                         break;
                     case 0:
                         view.GoodBye();
@@ -72,7 +70,7 @@ namespace ProjectA_ConsoleCore.Controller
                 }
             }
         }
-        
+
         public bool Authenfication()
         {
             string name = view.ReadString("Логин: ");
@@ -98,7 +96,7 @@ namespace ProjectA_ConsoleCore.Controller
         }
 
         #endregion
-        
+
         private void StudentCommand()
         {
             int cmd;
@@ -106,7 +104,7 @@ namespace ProjectA_ConsoleCore.Controller
             {
                 view.ProfileMenu(CurrentUser.Name + " " + CurrentUser.LastName);
                 cmd = view.ReadInt();
-                
+
                 switch (cmd)
                 {
                     case 1:
@@ -118,6 +116,7 @@ namespace ProjectA_ConsoleCore.Controller
                         {
                             view.Print("Бұл меню жасалу үстінде!!!\n", ConsoleColor.Green);
                         }
+
                         break;
                     case 2:
                         SelectProblems();
@@ -140,7 +139,7 @@ namespace ProjectA_ConsoleCore.Controller
                 view.Print(CurrentUser);
                 view.EditMenu();
                 cmd = view.ReadInt();
-                
+
                 switch (cmd)
                 {
                     case 1:
@@ -151,6 +150,7 @@ namespace ProjectA_ConsoleCore.Controller
                 }
             }
         }
+
         private void EditPass()
         {
             string lastPass = view.ReadPass("Ескі парольіңізді енгізіңіз: ");
@@ -159,13 +159,14 @@ namespace ProjectA_ConsoleCore.Controller
                 view.Println("Пароль қате! Парольді өзгерте алмайсыз");
                 return;
             }
-            CurrentUser.PasswordHash =  view.ReadPass("Жаңа пароль енгізіңіз: ");
+
+            CurrentUser.PasswordHash = view.ReadPass("Жаңа пароль енгізіңіз: ");
             model.AppContext.Update(CurrentUser);
             model.AppContext.SaveChanges();
             view.Print("Пароль сәтті түрде өзгертілді!!!\n", ConsoleColor.Green);
             view.Wait();
         }
-        
+
         private void SelectProblems(List<Problem> list = null)
         {
             Clear();
@@ -173,8 +174,9 @@ namespace ProjectA_ConsoleCore.Controller
             {
                 list = model.Problems;
             }
+
             var problem = view.Select(list);
-            if(problem == null) return;
+            if (problem == null) return;
             StudentProblemCommand(problem);
         }
 
@@ -187,7 +189,7 @@ namespace ProjectA_ConsoleCore.Controller
                 view.Print(problem);
                 view.StudentProblemMenu();
                 cmd = view.ReadInt();
-                
+
                 switch (cmd)
                 {
                     case 1:
@@ -203,7 +205,6 @@ namespace ProjectA_ConsoleCore.Controller
                         ReadKey();
                         break;
                 }
-                
             }
         }
 
@@ -214,7 +215,7 @@ namespace ProjectA_ConsoleCore.Controller
             {
                 view.TeacherMenu(CurrentUser.Name + " " + CurrentUser.LastName);
                 cmd = view.ReadInt(maxValue: 4);
-                
+
                 switch (cmd)
                 {
                     case 1:
@@ -226,6 +227,7 @@ namespace ProjectA_ConsoleCore.Controller
                         {
                             view.Print("Бұл меню жасалу үстінде!!!", ConsoleColor.Green);
                         }
+
                         break;
                     case 2:
                         TeacherProblemsMenu();
@@ -234,7 +236,7 @@ namespace ProjectA_ConsoleCore.Controller
                         ProfileCommand();
                         break;
                     // Мониторинг жүргізуге арналган метод
-                    case 4: 
+                    case 4:
                         MonitoringStudentProgress();
                         break;
                     case 0:
@@ -250,8 +252,8 @@ namespace ProjectA_ConsoleCore.Controller
             {
                 Clear();
                 view.TeacherProblemMenu();
-                cmd = view.ReadInt(maxValue:3);
-                
+                cmd = view.ReadInt(maxValue: 3);
+
                 switch (cmd)
                 {
                     case 1:
@@ -276,32 +278,11 @@ namespace ProjectA_ConsoleCore.Controller
             {
                 Clear();
                 view.MonitoringStudents(model.Users.OfType<Student>().ToList(), model.Problems); // Мониторинг кестесі
-                view.SendMessageToTheStudentMenu(); 
-                cmd = view.ReadInt(maxValue:2);
-                
+                view.SendMessageToTheStudentMenu();
+                cmd = view.ReadInt(maxValue: 2);
+
                 switch (cmd)
                 {
-                    //TODO Келесі срс жұмысының фундаменті (Event)
-                    case 1:
-                        try
-                        {
-                            SendMessageToTheAllStudents();
-                        }
-                        catch (NotImplementedException notImp)
-                        {
-                            view.Print("Бұл меню жасалу үстінде!!!", ConsoleColor.Green);
-                        }
-                        break;
-                    case 2:
-                        try
-                        {
-                            NoteToTheStudent();
-                        }
-                        catch (NotImplementedException notImp)
-                        {
-                            view.Print("Бұл меню жасалу үстінде!!!", ConsoleColor.Green);
-                        }
-                        break;
                     case 0:
                         return;
                     default:
@@ -309,7 +290,6 @@ namespace ProjectA_ConsoleCore.Controller
                         ReadKey();
                         break;
                 }
-                
             }
         }
 
@@ -331,18 +311,7 @@ namespace ProjectA_ConsoleCore.Controller
         {
             throw new NotImplementedException();
         }
-        
-        //TODO: Event аптасының тапсырмасы
-        private void NoteToTheStudent()
-        {
-            throw new NotImplementedException();
-        }
 
-        private void SendMessageToTheAllStudents()
-        {
-            throw new NotImplementedException();
-        }
-        
         #region Administrator
 
         public void AdministratorCommand()
@@ -352,7 +321,7 @@ namespace ProjectA_ConsoleCore.Controller
             {
                 view.AdministratorMenu(CurrentUser.Name + " " + CurrentUser.LastName);
                 cmd = view.ReadInt();
-                
+
                 switch (cmd)
                 {
                     case 1:
@@ -362,9 +331,9 @@ namespace ProjectA_ConsoleCore.Controller
                         RemoveUser();
                         break;
                     case 3:
-                       ProfileCommand(); 
+                        ProfileCommand();
                         break;
-                    
+
                     case 0:
                         return;
                 }
@@ -380,9 +349,10 @@ namespace ProjectA_ConsoleCore.Controller
             if (model.RemoveUser(user))
             {
                 view.Println("Пайдаланушы сәтті жойылды! ");
-            } else view.Println("Пайдаланушыны жою барысында қателік шықты! ");
+            }
+            else view.Println("Пайдаланушыны жою барысында қателік шықты! ");
+
             view.Wait();
-            
         }
 
         private void AddTeacher()
@@ -404,139 +374,38 @@ namespace ProjectA_ConsoleCore.Controller
 
         #region Compiler
 
-        private string GenerateRuntimeConfig()
-        {
-            using (var stream = new MemoryStream())
-            {
-                using (var writer = new Utf8JsonWriter(
-                    stream,
-                    new JsonWriterOptions() { Indented = true }
-                ))
-                {
-                    writer.WriteStartObject();
-                    writer.WriteStartObject("runtimeOptions");
-                    writer.WriteStartObject("framework");
-                    writer.WriteString("name", "Microsoft.NETCore.App");
-                    writer.WriteString(
-                        "version",
-                        RuntimeInformation.FrameworkDescription.Replace(".NET Core ", "")
-                    );
-                    writer.WriteEndObject();
-                    writer.WriteEndObject();
-                    writer.WriteEndObject();
-                }
-
-                return Encoding.UTF8.GetString(stream.ToArray());
-            }
-        }
         public void Submit(Problem problem)
         {
-            string sourcePath = view.ReadString("Программаның файлы орналасқан адресті жазыңыз немесе тышқанмен сүйреп әкеліңіз\n", ConsoleColor.Green);
-            sourcePath = sourcePath.Trim(new[] {'\'', '\"'});
+            string sourcePath =
+                view.ReadString("Программаның файлы орналасқан адресті жазыңыз немесе тышқанмен сүйреп әкеліңіз\n",
+                    ConsoleColor.Green);
+            sourcePath = sourcePath.Trim('\'', '\"');
             if (!File.Exists(sourcePath))
             {
                 view.ShowError("Файл табылмады!");
                 return;
             }
 
-            var syntaxTree = SyntaxFactory.ParseSyntaxTree(SourceText.From(File.ReadAllText(sourcePath)));
-            var assemblyPath = "test.exe";
-            var dotNetCoreDir = Path.GetDirectoryName(typeof(object).GetTypeInfo().Assembly.Location);
-            var compilation = CSharpCompilation.Create(Path.GetFileName(assemblyPath))
-                .WithOptions(new CSharpCompilationOptions(OutputKind.ConsoleApplication))
-                .AddReferences(
-                    MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Console).GetTypeInfo().Assembly.Location),
-                    MetadataReference.CreateFromFile(Path.Combine(dotNetCoreDir, "System.Runtime.dll"))
-                )
-                .AddSyntaxTrees(syntaxTree);
-            var result = compilation.Emit(assemblyPath);
-            
-            File.WriteAllText(
-                Path.ChangeExtension(assemblyPath, "runtimeconfig.json"),
-                GenerateRuntimeConfig()
-            );
-            
             Attempt attempt = model.AddAttemption(CurrentUser, problem);
-            
-            if (!result.Success)
+
+            Thread thread = new Thread(o =>
             {
-                view.Print("Компиляция барысында қате шықты!\n", ConsoleColor.Red);
-                attempt.Verdict = Verdict.Complation_error;
-            }
-            else
-            {
-                RunSolution(problem, assemblyPath, ref attempt);
-            }
-            model.AppContext.SaveChanges(); // әрбір жіберілген попыткаларды базада сақтау
-            // TODO: model.Attempts.Add(attempt);
-        }
-
-        private void RunSolution(Problem problem, string assembly, ref Attempt attempt)
-        {
-            Verdict verdict = Verdict.Wrong_answer;
-            foreach (var testCase in problem.TestCases)
-            {
-                Process process = new Process();
-                process.StartInfo.FileName = "dotnet";
-                process.StartInfo.Arguments = assembly;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardInput = true;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.ErrorDialog = false;
-                process.Start();
-            
-                StreamWriter stdInputWriter  = process.StandardInput;
-                StreamReader stdOutputReader  = process.StandardOutput;
-                
-                stdInputWriter.WriteLine(testCase.Input.Replace(' ', '\n'));
-                string res = stdOutputReader.ReadToEnd();
-                
-                if (string.Compare(res.Trim(), testCase.Output, StringComparison.InvariantCultureIgnoreCase)==0)
-                {
-                    verdict = Verdict.Accepted;
-                }
-                else
-                {
-                    verdict = Verdict.Wrong_answer;
-                    break;
-                }
-
-                
-
-                var result = new AttemptionResult(testCase.Input, testCase.Output, res);
-                attempt.TestCases.Add(result);
-                // process.Kill();
-            }
-
-            //Негізгі есептеулер
-            if (attempt.User is Student student) // студент жағдайын ғана қарастыру
-            {
-                attempt.Verdict = verdict;
-                int acceptedCnt = attempt.User.Attempts.Where(a => a.Problem == problem)
-                    .Count(a => a.Verdict == Verdict.Accepted); // Текущий есептің дұрыс жауаптар саны
-                int cnt = attempt.User.Attempts.Where(a => a.Problem == problem).ToList().Count - acceptedCnt; // штраф анықтау үшін текущий есептің барлық попыткасынан дұрыс жауап санын алып тастау керек. 
-                if (verdict == Verdict.Accepted && acceptedCnt == 1) // тек бірінші дұрыс қана қабылданады. екінші рет қайта жібергенде, ұпай қосылмайды.
-                    student.CurrentPoint += (problem.Point - (cnt * 50)>=150? problem.Point - (cnt * 50): 150); // штраф ұпайын алып тастап currentPoint - қа қосады. Егер өте көп попытка жіберіп, алған ұпайы минимальды көрсеткіштен төмен болса, оғпн минимум ұпай беріледі.
-
-                double percent = 0;
-                if (model.Problems != null)
-                {
-                    percent = student.CurrentPoint * 1.0 / model.Problems.Sum(s => s.Point) * 100; // үлгерімін есептеу
-                }
-
-                student.Gpa = percent;
-            }
-
-            if (verdict == Verdict.Accepted)
-            {
-                view.Print("Дұрыс жауап!\n", ConsoleColor.Green);
-            }
-            else 
-                view.Print("Қате жауап!\n", ConsoleColor.Red);
-            ReadKey();
+                compiler.Sumbit(attempt, problem, sourcePath);
+                // әрбір жіберілген попыткаларды базада сақтау
+                model.AppContext.SaveChanges();
+            });
+            thread.Start();
+            UserAttemptsPage();
         }
 
         #endregion
+
+        protected void UserAttemptsPage()
+        {
+            Clear();
+            view.Print(CurrentUser.Attempts);
+            view.Print("Артқа оралу үшін Enter басыңыз...");
+            ReadKey();
+        }
     }
 }

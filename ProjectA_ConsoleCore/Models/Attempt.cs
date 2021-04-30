@@ -18,6 +18,7 @@ namespace ProjectA_ConsoleCore.Models
             ShippingTime = DateTime.Now;
             Problem = problem;
             TestCases = new List<TestCase>();
+            Verdict = Verdict.Testing;
         }
 
         public Attempt()
