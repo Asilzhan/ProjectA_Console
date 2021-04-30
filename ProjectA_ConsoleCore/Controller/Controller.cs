@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -16,16 +17,20 @@ using static System.Console;
 
 namespace ProjectA_ConsoleCore.Controller
 {
+    
     public class Controller
     {
         View view = new View();
         Model model = new Model();
+        Compiler compiler = new Compiler();
         public User CurrentUser;
-
+       
         #region Main
 
         public void Main()
         {
+            compiler.StatusChanged += view.Rewrite;
+            
             int cmd;
             while (true)
             {
@@ -281,27 +286,6 @@ namespace ProjectA_ConsoleCore.Controller
                 
                 switch (cmd)
                 {
-                    //TODO Келесі срс жұмысының фундаменті (Event)
-                    case 1:
-                        try
-                        {
-                            SendMessageToTheAllStudents();
-                        }
-                        catch (NotImplementedException notImp)
-                        {
-                            view.Print("Бұл меню жасалу үстінде!!!", ConsoleColor.Green);
-                        }
-                        break;
-                    case 2:
-                        try
-                        {
-                            NoteToTheStudent();
-                        }
-                        catch (NotImplementedException notImp)
-                        {
-                            view.Print("Бұл меню жасалу үстінде!!!", ConsoleColor.Green);
-                        }
-                        break;
                     case 0:
                         return;
                     default:
@@ -331,18 +315,7 @@ namespace ProjectA_ConsoleCore.Controller
         {
             throw new NotImplementedException();
         }
-        
-        //TODO: Event аптасының тапсырмасы
-        private void NoteToTheStudent()
-        {
-            throw new NotImplementedException();
-        }
 
-        private void SendMessageToTheAllStudents()
-        {
-            throw new NotImplementedException();
-        }
-        
         #region Administrator
 
         public void AdministratorCommand()
@@ -404,139 +377,42 @@ namespace ProjectA_ConsoleCore.Controller
 
         #region Compiler
 
-        private string GenerateRuntimeConfig()
-        {
-            using (var stream = new MemoryStream())
-            {
-                using (var writer = new Utf8JsonWriter(
-                    stream,
-                    new JsonWriterOptions() { Indented = true }
-                ))
-                {
-                    writer.WriteStartObject();
-                    writer.WriteStartObject("runtimeOptions");
-                    writer.WriteStartObject("framework");
-                    writer.WriteString("name", "Microsoft.NETCore.App");
-                    writer.WriteString(
-                        "version",
-                        RuntimeInformation.FrameworkDescription.Replace(".NET Core ", "")
-                    );
-                    writer.WriteEndObject();
-                    writer.WriteEndObject();
-                    writer.WriteEndObject();
-                }
-
-                return Encoding.UTF8.GetString(stream.ToArray());
-            }
-        }
         public void Submit(Problem problem)
         {
             string sourcePath = view.ReadString("Программаның файлы орналасқан адресті жазыңыз немесе тышқанмен сүйреп әкеліңіз\n", ConsoleColor.Green);
-            sourcePath = sourcePath.Trim(new[] {'\'', '\"'});
+            sourcePath = sourcePath.Trim('\'', '\"');
             if (!File.Exists(sourcePath))
             {
                 view.ShowError("Файл табылмады!");
                 return;
             }
-
-            var syntaxTree = SyntaxFactory.ParseSyntaxTree(SourceText.From(File.ReadAllText(sourcePath)));
-            var assemblyPath = "test.exe";
-            var dotNetCoreDir = Path.GetDirectoryName(typeof(object).GetTypeInfo().Assembly.Location);
-            var compilation = CSharpCompilation.Create(Path.GetFileName(assemblyPath))
-                .WithOptions(new CSharpCompilationOptions(OutputKind.ConsoleApplication))
-                .AddReferences(
-                    MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Console).GetTypeInfo().Assembly.Location),
-                    MetadataReference.CreateFromFile(Path.Combine(dotNetCoreDir, "System.Runtime.dll"))
-                )
-                .AddSyntaxTrees(syntaxTree);
-            var result = compilation.Emit(assemblyPath);
-            
-            File.WriteAllText(
-                Path.ChangeExtension(assemblyPath, "runtimeconfig.json"),
-                GenerateRuntimeConfig()
-            );
-            
             Attempt attempt = model.AddAttemption(CurrentUser, problem);
             
-            if (!result.Success)
+            Thread thread = new Thread(o =>
             {
-                view.Print("Компиляция барысында қате шықты!\n", ConsoleColor.Red);
-                attempt.Verdict = Verdict.Complation_error;
-            }
-            else
-            {
-                RunSolution(problem, assemblyPath, ref attempt);
-            }
-            model.AppContext.SaveChanges(); // әрбір жіберілген попыткаларды базада сақтау
+                compiler.Sumbit(attempt, problem, sourcePath);
+                // әрбір жіберілген попыткаларды базада сақтау
+                model.AppContext.SaveChanges();
+            });
+            thread.Start();
+            UserAttemptsPage();
+            // compiler.Sumbit(model, CurrentUser, problem, sourcePath);
+            // // әрбір жіберілген попыткаларды базада сақтау
+            // model.AppContext.SaveChanges();
+            
+            
             // TODO: model.Attempts.Add(attempt);
         }
+        
+        #endregion
 
-        private void RunSolution(Problem problem, string assembly, ref Attempt attempt)
+        protected void UserAttemptsPage()
         {
-            Verdict verdict = Verdict.Wrong_answer;
-            foreach (var testCase in problem.TestCases)
-            {
-                Process process = new Process();
-                process.StartInfo.FileName = "dotnet";
-                process.StartInfo.Arguments = assembly;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardInput = true;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.ErrorDialog = false;
-                process.Start();
-            
-                StreamWriter stdInputWriter  = process.StandardInput;
-                StreamReader stdOutputReader  = process.StandardOutput;
-                
-                stdInputWriter.WriteLine(testCase.Input.Replace(' ', '\n'));
-                string res = stdOutputReader.ReadToEnd();
-                
-                if (string.Compare(res.Trim(), testCase.Output, StringComparison.InvariantCultureIgnoreCase)==0)
-                {
-                    verdict = Verdict.Accepted;
-                }
-                else
-                {
-                    verdict = Verdict.Wrong_answer;
-                    break;
-                }
-
-                
-
-                var result = new AttemptionResult(testCase.Input, testCase.Output, res);
-                attempt.TestCases.Add(result);
-                // process.Kill();
-            }
-
-            //Негізгі есептеулер
-            if (attempt.User is Student student) // студент жағдайын ғана қарастыру
-            {
-                attempt.Verdict = verdict;
-                int acceptedCnt = attempt.User.Attempts.Where(a => a.Problem == problem)
-                    .Count(a => a.Verdict == Verdict.Accepted); // Текущий есептің дұрыс жауаптар саны
-                int cnt = attempt.User.Attempts.Where(a => a.Problem == problem).ToList().Count - acceptedCnt; // штраф анықтау үшін текущий есептің барлық попыткасынан дұрыс жауап санын алып тастау керек. 
-                if (verdict == Verdict.Accepted && acceptedCnt == 1) // тек бірінші дұрыс қана қабылданады. екінші рет қайта жібергенде, ұпай қосылмайды.
-                    student.CurrentPoint += (problem.Point - (cnt * 50)>=150? problem.Point - (cnt * 50): 150); // штраф ұпайын алып тастап currentPoint - қа қосады. Егер өте көп попытка жіберіп, алған ұпайы минимальды көрсеткіштен төмен болса, оғпн минимум ұпай беріледі.
-
-                double percent = 0;
-                if (model.Problems != null)
-                {
-                    percent = student.CurrentPoint * 1.0 / model.Problems.Sum(s => s.Point) * 100; // үлгерімін есептеу
-                }
-
-                student.Gpa = percent;
-            }
-
-            if (verdict == Verdict.Accepted)
-            {
-                view.Print("Дұрыс жауап!\n", ConsoleColor.Green);
-            }
-            else 
-                view.Print("Қате жауап!\n", ConsoleColor.Red);
+            Clear();
+            view.Print(CurrentUser.Attempts);
+            view.Print("Артқа оралу үшін Enter басыңыз...");
             ReadKey();
         }
 
-        #endregion
     }
 }

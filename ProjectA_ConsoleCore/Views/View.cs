@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using ProjectA_ConsoleCore.Helper;
 using ProjectA_ConsoleCore.Models;
 using  static System.Console;
@@ -74,9 +75,7 @@ namespace ProjectA_ConsoleCore.Views
         //Мұғалім хабарламасы
         public void SendMessageToTheStudentMenu()
         {
-            WriteLine("[1] - Студенттерге хабарлама жіберу\n" +
-                      "[2] - Студентке ескертпе\n" +
-                      "[0] - Артқа");
+            WriteLine("[0] - Артқа");
         }
         
         #endregion
@@ -206,12 +205,20 @@ namespace ProjectA_ConsoleCore.Views
             }
             else
             {
+                attempts.Reverse();
                 WriteLine(new string('-', 70));
                 WriteLine($"|{"ID",5}|{"Аты", 20}|{"Уақыты", 20}|{"Вердикт", 20}|");
                 WriteLine(new string('-', 70));
                 foreach (var attempt in attempts)
                 {
-                    WriteLine($"|{attempt.Id,5}|{attempt.Problem.Title, 20}|{attempt.ShippingTime, 20}|{attempt.Verdict, 20}|");
+                    Write($"|{attempt.Id,5}|{attempt.Problem.Title, 20}|{attempt.ShippingTime, 20}|");
+                    if (attempt.Verdict == Verdict.Accepted) 
+                        ForegroundColor = ConsoleColor.Green;
+                    else if(attempt.Verdict != Verdict.Testing)
+                        ForegroundColor = ConsoleColor.Red;
+                    Write($"{attempt.Verdict, 20}");
+                    ResetColor();
+                    WriteLine("|");
                 }
                 WriteLine(new string('-', 70));
                 ReadKey();
@@ -318,6 +325,16 @@ namespace ProjectA_ConsoleCore.Views
                 }
                 WriteLine($"{mark, 6}|{student.Gpa, 6:F}|");
             }
+        }
+
+        public void Rewrite(ConsoleRewriteEventArgs args)
+        {
+            Thread.Sleep(10000);
+            SetCursorPosition(args.X, args.Y);
+            ForegroundColor = args.Color;
+            Write(args.Text);
+            ResetColor();
+            SetCursorPosition(args.CurrentX, args.CurrentY);
         }
     }
 }

@@ -5,7 +5,7 @@ using ProjectA_ConsoleCore.Models;
 
 namespace ProjectA_ConsoleCore.DbContexes
 {
-    public class AppContext : DbContext
+    public sealed class AppContext : DbContext
     {
         public DbSet<Student> Students { get; set; }
         public DbSet<Teacher> Teachers { get; set; }
@@ -14,7 +14,9 @@ namespace ProjectA_ConsoleCore.DbContexes
         public DbSet<Attempt> Attempts { get; set; }
         public AppContext()
         {
+            Database.EnsureDeleted();
             Database.EnsureCreated();
+            
             AddSampleData(); // Бірінші рет программаны қосқан кезде локальный база данных-қа ақпаратты жазады. Кейінгі қосу барысында комментке алып қоя салсаңыз болады. 
         }
 
